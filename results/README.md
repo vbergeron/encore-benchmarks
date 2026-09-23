@@ -13,7 +13,8 @@ latest row for each (workload, variant, board, N).
 | `workload`, `variant`, `n` | what was measured (`E`, `C`, `R`, `RV`) |
 | `board`, `core`, `target` | where (see `boards/`) |
 | `profile` | `timing` (instructions/cycles, no VM stats) or `memory` (VM stats on) |
-| `ok`, `reason` | `false` with a reason when the case failed (VM error, budget exceeded at link time) |
+| `ok`, `reason` | `false` with a reason when the case failed (VM error, budget exceeded at link time, or a timed run failed) |
+| `timed_ok` | E only: every timed run returned without a VM error. `false` makes the row `ok: false`: its counts measure a partial run |
 | `out_hash` | FNV-1a of the output; must equal the R row's (`cargo xtask check`) |
 | `insns` | QEMU only: `{min, median, p99, max}` instructions per run, calibration subtracted |
 | `cycles` | DWT boards only: `{min, median, p99, max}` cycles per run, calibration subtracted |
