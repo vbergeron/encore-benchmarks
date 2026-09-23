@@ -14,7 +14,7 @@
 //! Rocq-extracted `.scm` file into bytecode for `encore_vm::encore_program!`.
 //!
 //! Every parameter comes from an environment variable so that
-//! `scripts/bench.py` can sweep them without editing files:
+//! `cargo xtask` can sweep them without editing files:
 //!
 //! | Variable | Default | Meaning |
 //! |---|---|---|
@@ -38,6 +38,7 @@ const DEFAULT_FLASH_KB: u32 = 256;
 #[derive(Debug, Clone)]
 pub struct Board {
     pub name: String,
+    pub core: String,
     pub target: String,
     pub flash_origin: u64,
     pub flash_kb: u32,
@@ -45,6 +46,13 @@ pub struct Board {
     pub ram_kb: u32,
     /// `true` when the DWT cycle counter can be trusted on this board.
     pub dwt: bool,
+    /// How the host runs the firmware: `qemu` or `probe-rs`.
+    pub runner: String,
+    /// QEMU `-machine` and `-cpu`, for the `qemu` runner.
+    pub qemu_machine: Option<String>,
+    pub qemu_cpu: Option<String>,
+    /// probe-rs `--chip`, for the `probe-rs` runner.
+    pub chip: Option<String>,
 }
 
 impl Board {
@@ -60,20 +68,22 @@ impl Board {
                 .and_then(toml::Value::as_integer)
                 .unwrap_or_else(|| panic!("{}: missing integer `{k}`", path.display()))
         };
-        let string = |k: &str| {
-            t.get(k)
-                .and_then(toml::Value::as_str)
-                .unwrap_or_else(|| panic!("{}: missing string `{k}`", path.display()))
-                .to_owned()
-        };
+        let opt = |k: &str| t.get(k).and_then(toml::Value::as_str).map(str::to_owned);
+        let string =
+            |k: &str| opt(k).unwrap_or_else(|| panic!("{}: missing string `{k}`", path.display()));
         Board {
             name: name.to_owned(),
+            core: string("core"),
             target: string("target"),
             flash_origin: int("flash_origin") as u64,
             flash_kb: int("flash_kb") as u32,
             ram_origin: int("ram_origin") as u64,
             ram_kb: int("ram_kb") as u32,
             dwt: string("cycles") == "dwt",
+            runner: string("runner"),
+            qemu_machine: opt("qemu_machine"),
+            qemu_cpu: opt("qemu_cpu"),
+            chip: opt("chip"),
         }
     }
 }

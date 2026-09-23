@@ -51,5 +51,5 @@ Rules that keep the variants comparable:
   and share the release profile (`opt-level = "s"`, LTO, one codegen unit).
 - R is written without looking at the Gallina, so that it is not a copy of
   the functional structure.
-- The package name must be `<w>-<variant>`: that is how `scripts/bench.py`
+- The package name must be `<w>-<variant>`: that is how `cargo xtask`
   finds it.

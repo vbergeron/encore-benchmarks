@@ -1,7 +1,7 @@
 # Results
 
 `benchmarks.jsonl` holds one JSON object per line, one line per (run, case).
-Rows are only appended; `scripts/bench.py check` and any analysis use the
+Rows are only appended; `cargo xtask check` and any analysis use the
 latest row for each (workload, variant, board, N).
 
 | Field | Meaning |
@@ -14,7 +14,7 @@ latest row for each (workload, variant, board, N).
 | `board`, `core`, `target` | where (see `boards/`) |
 | `profile` | `timing` (instructions/cycles, no VM stats) or `memory` (VM stats on) |
 | `ok`, `reason` | `false` with a reason when the case failed (VM error, budget exceeded at link time) |
-| `out_hash` | FNV-1a of the output; must equal the R row's (`bench.py check`) |
+| `out_hash` | FNV-1a of the output; must equal the R row's (`cargo xtask check`) |
 | `insns` | QEMU only: `{min, median, p99, max}` instructions per run, calibration subtracted |
 | `cycles` | DWT boards only: `{min, median, p99, max}` cycles per run, calibration subtracted |
 | `stack_peak_bytes` | stack painting; the Encore VM has no call stack, so for E this is the Rust driver and the VM's own frames |

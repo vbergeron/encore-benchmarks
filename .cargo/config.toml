@@ -1,2 +1,6 @@
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 rustflags = ["-C", "link-arg=-Tlink.x"]
+
+[alias]
+# The host-side runner: `cargo xtask run -w w0_smoke -v e`, see xtask/.
+xtask = "run --quiet --package xtask --"
