@@ -46,8 +46,8 @@ results/             benchmarks.jsonl (one row per case), see results/README.md
 
 Requirements: rustup (the toolchain is pinned to Rust 1.88 by
 `rust-toolchain.toml`), `qemu-system-arm`, `arm-none-eabi-binutils` (for
-`nm` and `size`), Python ≥ 3.11. For the Rocq side: Rocq 9 with its Stdlib,
-and dune ≥ 3.8.
+`nm` and `size`), Python ≥ 3.11. For the Rocq side: Rocq 9.1 with its Stdlib 9.1,
+and dune ≥ 3.8 (`opam install --deps-only .` installs them).
 
 ```bash
 # Rocq: check the proofs, and re-extract the Scheme (promoted into the tree)

@@ -8,7 +8,7 @@ jobs:
   rocq:
     name: Rocq proofs and extraction
     runs-on: ubuntu-24.04
-    container: rocq/rocq-prover:9.0
+    container: rocq/rocq-prover:9.1
     steps:
       - uses: actions/checkout@v4
       - name: Build theories and re-extract
