@@ -117,7 +117,7 @@ struct TargetArgs {
     /// e.g. w0_smoke
     #[arg(short, long)]
     workload: String,
-    /// e (Encore), c (CertiRocq), r (Rust), rv (verified Rust)
+    /// e (Encore), c (CertiRocq), r (Rust)
     #[arg(short, long)]
     variant: String,
     #[arg(short, long, default_value = "qemu-lm3s6965")]

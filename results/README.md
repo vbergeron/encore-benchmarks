@@ -10,7 +10,7 @@ latest row for each (workload, variant, board, N).
 | `timestamp`, `label` | when, and a free-form tag (`--label`) |
 | `commit`, `dirty` | this repository's commit; `dirty` = uncommitted changes to tracked files |
 | `encore_version`, `rustc` | from `Cargo.lock` and `rustc --version` |
-| `workload`, `variant`, `n` | what was measured (`E`, `C`, `R`, `RV`) |
+| `workload`, `variant`, `n` | what was measured (`E`, `C`, `R`) |
 | `board`, `core`, `target` | where (see `boards/`) |
 | `profile` | `timing` (instructions/cycles, no VM stats) or `memory` (VM stats on) |
 | `ok`, `reason` | `false` with a reason when the case failed (VM error, budget exceeded at link time, or a timed run failed) |
