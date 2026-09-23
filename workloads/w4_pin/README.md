@@ -32,8 +32,9 @@ instruction".
 - **Heap**: 32 KiB by default (E). C: 20 KiB arena, 2^10-word nursery.
 - **C** (CertiRocq, `certirocq/`): the direct-style C recurses once per
   APDU (`process` is not tail-recursive), about 94 bytes of C stack each;
-  1000 APDUs do not fit in the RAM budget and fail with `C stack
-  exhausted`.
+  1000 APDUs do not fit in the RAM budget (the runtime aborts with the
+  20 KiB arena exhausted). C therefore runs only N = 1, 10 and 100
+  (`CASES` in `certirocq/src/main.rs`), and has no row for N = 1000.
 
 Not modelled: constant-time comparison (the Gallina and the Rust both stop
 at the first differing digit), and anti-tearing (real cards decrement the
