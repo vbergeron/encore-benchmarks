@@ -1,0 +1,15 @@
+# Generated or vendored: collapsed in GitHub diffs, left out of language
+# statistics. They are still committed and reviewed by regenerating them.
+
+# CertiRocq output (certirocq/generate.sh)
+workloads/*/certirocq/gen/** linguist-generated=true
+# Rocq extraction output (dune build, promoted)
+workloads/*/theories/*.scm linguist-generated=true
+# CertiRocq runtime, copied from upstream (see certirocq/README.md)
+certirocq/runtime/gc_stack.c linguist-vendored=true linguist-generated=true
+certirocq/runtime/gc_stack.h linguist-vendored=true linguist-generated=true
+certirocq/runtime/values.h linguist-vendored=true linguist-generated=true
+certirocq/runtime/config.h linguist-vendored=true linguist-generated=true
+certirocq/certirocq-no-wasm.patch linguist-generated=true
+# Benchmark rows appended by cargo xtask
+results/benchmarks.jsonl linguist-generated=true
