@@ -2,18 +2,23 @@
 
 Benchmarks for [Encore](https://github.com/vbergeron/encore), a bytecode VM
 that runs Rocq-extracted, formally verified logic on microcontrollers. The
-study compares four ways of shipping the same firmware logic:
+study compares three ways of shipping the same firmware logic:
 
 | Variant | Toolchain | Role |
 |---|---|---|
 | **E** | Gallina → Scheme → Encore bytecode → `encore_vm` | system under study |
 | **C** | Gallina → CertiRocq → Clight → gcc -Os | closest verified competitor |
 | **R** | idiomatic Rust `no_std`, no allocator | performance ceiling, **output oracle** |
-| **R+V** | Rust + Kani or Verus | "verify the Rust directly" |
 
 The full experiment plan is *Encore — plan d'expérience comparatif* (in
 French): research questions Q1–Q5, metrics, workloads W1–W8, boards and
-threats to validity. This repository implements it.
+threats to validity. This repository implements it, with one change: the
+plan's fourth variant, **R+V** (the Rust checked with Kani or Verus, "verify
+the Rust directly"), is not measured. It is an alternative to the approach
+under study rather than a point of comparison: it proves properties of
+hand-written Rust, not the Gallina that E and C compile, so it would answer a
+different question. Its runtime cost is R's, since the checks happen at build
+time.
 
 ## Status
 
@@ -28,7 +33,6 @@ threats to validity. This repository implements it.
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | need instrumentation in `encore_vm` (not in 0.1.4) |
 | Variant C (CertiRocq), W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
-| Variant R+V | not started |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |
 

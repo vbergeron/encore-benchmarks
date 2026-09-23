@@ -1,4 +1,4 @@
-//! Device-side measurement harness, shared by every variant (E, C, R, R+V).
+//! Device-side measurement harness, shared by every variant (E, C, R).
 //!
 //! A firmware measures one workload like this:
 //!

@@ -16,7 +16,7 @@ smoke test for the pipeline; W1–W8 are the study.
 | W7 | FIDO credential store (persistent RB tree) | balance invariants; `lookup` after `insert` | 10 → 500 entries | — |
 | W8 | CRC-16 / CRC-32 in Gallina | equals the polynomial definition | block size | — |
 
-Order, per the plan: W4 then W1 (in all four variants), then W2 and W7,
+Order, per the plan: W4 then W1 (in all three variants), then W2 and W7,
 then W3, W5, W6, W8.
 
 ## Layout of a workload
@@ -36,7 +36,6 @@ workloads/<w>/
   rust/                 R   — package `<w>-r`  (oracle)
   encore/               E   — package `<w>-e`, feature `stats`
   certirocq/            C   — package `<w>-c`: CompileC.v, gen/ (see certirocq/README.md)
-  verified/             R+V — package `<w>-rv` (to come)
 ```
 
 Rules that keep the variants comparable:
