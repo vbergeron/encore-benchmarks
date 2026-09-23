@@ -31,6 +31,11 @@ unsafe extern "C" {
     fn body(tinfo: *mut core::ffi::c_void) -> Value;
 }
 
+/// The cases of `vectors::CASES` that fit the RAM budget. The direct-style
+/// C recurses once per byte (about 200 bytes of C stack each), so 256 bytes
+/// exhausts the 20 KiB arena and 1024 bytes the C stack; see the README.
+const CASES: &[u32] = &[16, 64];
+
 fn run(n: u32) -> Result<Value, &'static str> {
     crq::run(body, crq::int(n as isize))
 }
@@ -51,7 +56,7 @@ fn main() -> ! {
             .u32("c_log_nursery", config::C_LOG_NURSERY)
     });
 
-    for &n in vectors::CASES {
+    for &n in CASES {
         let pair = match run(n) {
             Ok(v) => v,
             Err(reason) => {

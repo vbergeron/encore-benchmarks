@@ -30,7 +30,9 @@ encodes a frame, then decodes the encoding.
 entry point `c_roundtrip` returns the encoding and the decoding (the heap is
 reset between calls). The direct-style C recurses once per byte in
 `read_bytes`, `split_zero` and `dec`, about 200 bytes of C stack per byte,
-so 256 and 1024 bytes do not fit in the RAM budget.
+so 256 and 1024 bytes do not fit in the RAM budget: 256 exhausts the arena
+and 1024 the C stack. C therefore runs only N = 16 and 64 (`CASES` in
+`certirocq/src/main.rs`), and has no rows for the two larger frames.
 
 The R variant is the classic single-pass encoder and a bounds-checked
 decoder into static buffers; it allocates nothing.
