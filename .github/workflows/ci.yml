@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  rocq:
+    name: Rocq proofs and extraction
+    runs-on: ubuntu-24.04
+    # The image's opam switch belongs to its non-root user (uid 1000), but
+    # actions/checkout needs root to write the runner's files: run the
+    # container as root and drop to that user for the build.
+    container:
+      image: rocq/rocq-prover:9.1
+      options: --user root
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build theories and re-extract
+        run: |
+          user="$(getent passwd 1000 | cut -d: -f1)"
+          echo "building as ${user:?no uid 1000 user in the image}"
+          chown -R "$user" "$GITHUB_WORKSPACE"
+          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && rocq --version && dune build"
+      - name: Promoted Scheme is up to date
+        run: git -c safe.directory='*' diff --exit-code -- 'workloads/*/theories/*.scm'
+
+  firmware:
+    name: Harness tests and QEMU smoke
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install QEMU and binutils
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends qemu-system-arm binutils-arm-none-eabi
+      - name: Toolchain (from rust-toolchain.toml)
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@v2
+      - name: Host tests
+        run: cargo test
+      - name: W0 on QEMU (Cortex-M3 and Cortex-M33)
+        run: |
+          for board in qemu-lm3s6965 qemu-an505; do
+            for v in r e; do
+              scripts/bench.py run -w w0_smoke -v "$v" -b "$board" --out ci.jsonl
+            done
+            scripts/bench.py run -w w0_smoke -v e -b "$board" --profile memory --out ci.jsonl
+          done
+      - name: Every variant matches the R oracle
+        run: scripts/bench.py check --results ci.jsonl
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ci-results
+          path: ci.jsonl

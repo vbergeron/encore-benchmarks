@@ -1,0 +1,11 @@
+# nRF52840-DK, Cortex-M4F: core-sensitivity check. Not yet validated.
+description = "nRF52840, Cortex-M4"
+core = "cortex-m4"
+target = "thumbv7em-none-eabi"
+flash_origin = 0x00000000
+flash_kb = 1024
+ram_origin = 0x20000000
+ram_kb = 256
+cycles = "dwt"
+runner = "probe-rs"
+chip = "nRF52840_xxAA"

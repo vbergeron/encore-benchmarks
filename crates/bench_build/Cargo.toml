@@ -1,0 +1,15 @@
+[package]
+name = "bench_build"
+description = "Build-script helper shared by every benchmark firmware: memory.x from a board budget, bench_config.rs, Encore bytecode."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[features]
+encore = ["dep:encore_compiler", "dep:encore_scheme"]
+
+[dependencies]
+toml = { version = "0.8", default-features = false, features = ["parse"] }
+encore_compiler = { workspace = true, optional = true }
+encore_scheme = { workspace = true, optional = true }

@@ -1,0 +1,13 @@
+# QEMU LM3S6965 (Cortex-M3, ARMv7-M): the board used in "From Rocq to Metal".
+# Kept for continuity with the paper's numbers. Instruction counts only.
+description = "QEMU lm3s6965evb, Cortex-M3"
+core = "cortex-m3"
+target = "thumbv7m-none-eabi"
+flash_origin = 0x00000000
+flash_kb = 256
+ram_origin = 0x20000000
+ram_kb = 64
+cycles = "none"           # QEMU has no cycle-accurate DWT
+runner = "qemu"
+qemu_machine = "lm3s6965evb"
+qemu_cpu = "cortex-m3"

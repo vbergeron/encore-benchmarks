@@ -1,0 +1,13 @@
+# STM32U585 (B-U585I-IOT02A), Cortex-M33: main measurement board.
+# Before measuring: fixed SYSCLK, ICACHE disabled, flash prefetch off
+# (see README "Rigueur"). Not yet validated on hardware.
+description = "STM32U585, Cortex-M33 @ fixed clock"
+core = "cortex-m33"
+target = "thumbv8m.main-none-eabi"
+flash_origin = 0x08000000
+flash_kb = 2048
+ram_origin = 0x20000000
+ram_kb = 768
+cycles = "dwt"
+runner = "probe-rs"
+chip = "STM32U585AIIx"
