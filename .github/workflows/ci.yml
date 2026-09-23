@@ -42,13 +42,15 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: Host tests (harness, build helper, runner)
         run: cargo test
-      - name: W0 on QEMU (Cortex-M3 and Cortex-M33)
+      - name: Workloads on QEMU (Cortex-M3 and Cortex-M33)
         run: |
-          for board in qemu-lm3s6965 qemu-an505; do
-            for v in r e; do
-              cargo xtask run -w w0_smoke -v "$v" -b "$board" --out ci.jsonl
+          for w in w0_smoke w4_pin w6_cobs; do
+            for board in qemu-lm3s6965 qemu-an505; do
+              for v in r e; do
+                cargo xtask run -w "$w" -v "$v" -b "$board" --out ci.jsonl
+              done
+              cargo xtask run -w "$w" -v e -b "$board" --profile memory --out ci.jsonl
             done
-            cargo xtask run -w w0_smoke -v e -b "$board" --profile memory --out ci.jsonl
           done
       - name: Every variant matches the R oracle
         run: cargo xtask check --results ci.jsonl

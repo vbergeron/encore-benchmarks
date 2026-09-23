@@ -28,7 +28,8 @@ threats to validity. This repository implements it.
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | need instrumentation in `encore_vm` (not in 0.1.4) |
 | Variants C and R+V | not started |
-| Workloads W1–W8 | not started (W4 then W1 first, per the plan) |
+| W4 (PIN state machine), W6 (COBS), variants E and R | done, run on both QEMU boards |
+| Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |
 
 ## Layout
 
@@ -108,8 +109,12 @@ when counting instructions or cycles.
 The Rocq side builds with dune (`dune-project` at the root, `rocq.theory`
 stanzas). `theories/EncoreExtraction.v` holds the extraction directives
 shared by every workload: `nat` becomes a 24-bit VM integer, and
-`Init.Nat.{add,mul,sub,eqb,leb,ltb}` become VM primitives. Every workload
-imports it, so they all rest on the same (documented, unproven) assumption.
+`Init.Nat.{add,mul,sub,eqb,leb,ltb}` (and their `PeanoNat.Nat` aliases)
+become VM primitives. Every workload imports it, so they all rest on the
+same (documented, unproven) assumption. `theories/EncoreInput.v` declares
+`input_byte`, an axiom realised by an Encore extern, through which
+workloads read their input buffer (APDU stream, frame) from the host
+instead of having Rust build lists on the VM heap.
 
 Each workload's `theories/dune` has a rule that runs its `Extract.v` and
 **promotes** the resulting `.scm` into the source tree. The `.scm` is
