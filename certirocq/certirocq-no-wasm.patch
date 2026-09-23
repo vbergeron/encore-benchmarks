@@ -1,0 +1,235 @@
+diff --git a/plugin/_CoqProject b/plugin/_CoqProject
+index b0ea7a2..dc038cf 100644
+--- a/plugin/_CoqProject
++++ b/plugin/_CoqProject
+@@ -263,38 +263,6 @@ extraction/lambdaANF_to_Clight.mli
+ extraction/lambdaANF_to_Clight_stack.ml
+ extraction/lambdaANF_to_Clight_stack.mli
+ 
+-extraction/ssrnat.ml
+-extraction/ssrnat.mli
+-extraction/numerics.ml
+-extraction/numerics.mli
+-extraction/eqtype.ml
+-extraction/eqtype.mli
+-extraction/common0.ml
+-extraction/common0.mli
+-extraction/bytes.ml
+-extraction/bytes.mli
+-extraction/simd.ml
+-extraction/simd.mli
+-extraction/datatypes0.ml
+-extraction/datatypes0.mli
+-extraction/datatypes_properties.ml
+-extraction/datatypes_properties.mli
+-extraction/leb128.ml
+-extraction/leb128.mli
+-extraction/seq.ml
+-extraction/seq.mli
+-extraction/binary_format_printer.ml
+-extraction/binary_format_printer.mli
+-extraction/list_extra.ml
+-extraction/list_extra.mli
+-extraction/lambdaANF_to_Wasm_primitives.ml
+-extraction/lambdaANF_to_Wasm_primitives.mli
+-extraction/lambdaANF_to_Wasm_restrictions.ml
+-extraction/lambdaANF_to_Wasm_restrictions.mli
+-extraction/lambdaANF_to_Wasm.ml
+-extraction/lambdaANF_to_Wasm.mli
+-extraction/toplevel3.ml
+-extraction/toplevel3.mli
+ 
+ extraction/lambdaBoxLocal_to_LambdaANF.ml
+ extraction/lambdaBoxLocal_to_LambdaANF.mli
+@@ -334,8 +302,6 @@ extraction/memdata.ml
+ extraction/memdata.mli
+ extraction/memory.ml
+ extraction/memory.mli
+-extraction/memory0.ml
+-extraction/memory0.mli
+ extraction/memtype.ml
+ extraction/memtype.mli
+ extraction/monad0.ml
+diff --git a/plugin/certirocq.ml b/plugin/certirocq.ml
+index 64271c1..050bcaf 100644
+--- a/plugin/certirocq.ml
++++ b/plugin/certirocq.ml
+@@ -969,27 +969,6 @@ module CompileFunctor (CI : CompilerInterface) = struct
+     Printf.fprintf f "%s" s;
+     close_out f
+ 
+-  let compile_wasm ~opaque_access opts gr =
+-    let term = quote ~opaque_access opts gr in
+-    let debug = opts.debug in
+-    let options = make_pipeline_options opts in
+-    let p = Pipeline.compile_Wasm options (Obj.magic term) in
+-    match p with
+-    | (CompM.Ret prg, dbg) ->
+-      debug_msg debug "Finished compiling, printing to file.";
+-      let time = Unix.gettimeofday() in
+-      let suff = opts.ext in
+-      let fname = opts.filename in
+-      let file = fname ^ suff ^ ".wasm" in
+-      print_to_file_no_nl (string_of_bytestring prg) file;
+-      let time = (Unix.gettimeofday() -. time) in
+-      debug_msg debug (Printf.sprintf "Printed to file %s in %f s.." file time);
+-      debug_msg debug "Pipeline debug:";
+-      debug_msg debug (string_of_bytestring dbg)
+-    | (CompM.Err s, dbg) ->
+-      debug_msg debug "Pipeline debug:";
+-      debug_msg debug (string_of_bytestring dbg);
+-      CErrors.user_err Pp.(str "compile_wasm" ++ (str "Could not compile: " ++ (pr_string s) ++ str "\n"))
+ 
+ 
+   (* Quote Coq inductive type *)
+diff --git a/plugin/certirocq.mli b/plugin/certirocq.mli
+index c039f8e..64a2160 100644
+--- a/plugin/certirocq.mli
++++ b/plugin/certirocq.mli
+@@ -88,8 +88,6 @@ module CompileFunctor (CI : CompilerInterface) : sig
+                   options -> Names.GlobRef.t -> import list -> unit
+   val show_ir : opaque_access:Global.indirect_accessor ->
+                 options -> Names.GlobRef.t -> unit
+-  val compile_wasm : opaque_access:Global.indirect_accessor ->
+-                    options -> Names.GlobRef.t -> unit
+   val ffi_command : opaque_access:Global.indirect_accessor ->
+                     options -> Names.GlobRef.t -> unit
+   val glue_command : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t list -> unit
+@@ -101,7 +99,6 @@ val compile_only : opaque_access:Global.indirect_accessor -> options -> Names.Gl
+ val generate_glue_only : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> unit
+ val compile_C : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> import list -> unit
+ val show_ir : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> unit
+-val compile_wasm : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> unit
+ val ffi_command : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> unit
+ val glue_command : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t list -> unit
+ val eval_gr : opaque_access:Global.indirect_accessor -> options -> Names.GlobRef.t -> import list -> Constr.t
+diff --git a/plugin/certirocq_plugin.mlpack b/plugin/certirocq_plugin.mlpack
+index 0c4a37b..e219ba5 100644
+--- a/plugin/certirocq_plugin.mlpack
++++ b/plugin/certirocq_plugin.mlpack
+@@ -276,7 +276,6 @@ Ctypesdefs
+ Memtype
+ Memdata
+ Memory
+-Memory0
+ Globalenvs
+ Clight
+ PrintAST
+@@ -290,21 +289,6 @@ Toplevel0
+ Toplevel1
+ Toplevel2
+ 
+-Ssrnat
+-Eqtype
+-Seq
+-Numerics
+-Bytes
+-Leb128
+-Simd
+-Datatypes0
+-Datatypes_properties
+-List_extra
+-Binary_format_printer
+-LambdaANF_to_Wasm_restrictions
+-LambdaANF_to_Wasm_primitives
+-LambdaANF_to_Wasm
+-Toplevel3
+ 
+ Glue_utils
+ Glue
+diff --git a/plugin/g_certirocq.mlg b/plugin/g_certirocq.mlg
+index 6da632a..09b7a69 100644
+--- a/plugin/g_certirocq.mlg
++++ b/plugin/g_certirocq.mlg
+@@ -168,11 +168,6 @@ VERNAC COMMAND EXTEND CertiRocq_Compile CLASSIFIED AS QUERY STATE opaque_access
+     let opts = Certirocq.make_options l cs (get_name gr) in
+     Certirocq.compile_only opts gr imps
+   }
+-| [ "CertiRocq" "Compile" "Wasm" cargs_list(l) global(gr) ] -> {
+-    let gr = Nametab.global gr in
+-    let opts = Certirocq.make_options l [] (get_name gr) in
+-    Certirocq.compile_wasm opts gr
+-  }
+ | [ "CertiRocq" "Run" cargs_list(l) global(gr) "Extract" "Constants" "[" extract_cnst_list_sep(cs, ",") "]" "Include" "[" cinclude_list_sep(imps, ",") "]" ] -> {
+   let gr = Nametab.global gr in
+   let opts = Certirocq.make_options l cs (get_name gr) in
+diff --git a/theories/Compiler/pipeline.v b/theories/Compiler/pipeline.v
+index d1ada78..ee55f40 100644
+--- a/theories/Compiler/pipeline.v
++++ b/theories/Compiler/pipeline.v
+@@ -1,6 +1,5 @@
+-From Wasm Require Import binary_format_printer.
+ 
+-Require Export LambdaBoxMut.toplevel LambdaBoxLocal.toplevel LambdaANF.toplevel Codegen.toplevel CodegenWasm.toplevel.
++Require Export LambdaBoxMut.toplevel LambdaBoxLocal.toplevel LambdaANF.toplevel Codegen.toplevel.
+ Require Import compcert.lib.Maps.
+ From Stdlib Require Import ZArith.
+ Require Import Common.Common Common.compM Common.Pipeline_utils.
+@@ -89,12 +88,6 @@ Definition pipeline (p : Template.Ast.Env.program) :=
+  *)  p <- CertiRocq_pipeline next_id prs false p ;;
+   compile_Clight prs p.
+ 
+-Definition pipeline_Wasm (p : Template.Ast.Env.program) :=
+-  let genv := fst p in
+-  '(prs, next_id) <- register_prims next_id genv.(Ast.Env.declarations) ;;
+-(*   p <- erase_PCUIC p ;;
+- *)  p <- CertiRocq_pipeline next_id prs false p ;;
+-     compile_LambdaANF_to_Wasm prs p.
+ 
+ Definition default_opts : Options :=
+   {| erasure_config := Erasure.default_erasure_config;
+@@ -166,10 +159,3 @@ Definition show_IR (opts : Options) (p : Template.Ast.Env.program) : (error stri
+   end.
+ 
+ 
+-(** * For compiling lambda_ANF to Wasm *)
+-Definition compile_Wasm (opts : Options) (p : Template.Ast.Env.program) : (error string * string) :=
+-let (perr, log) := run_pipeline _ _ opts p pipeline_Wasm in
+-  match perr with
+-  | Ret p => (Ret (String.parse (binary_of_module p)), log)
+-  | Err s => (Err s, log)
+-  end.
+diff --git a/theories/Extraction/extraction.v b/theories/Extraction/extraction.v
+index b05d3a9..3308bec 100644
+--- a/theories/Extraction/extraction.v
++++ b/theories/Extraction/extraction.v
+@@ -111,8 +111,7 @@ Separate Extraction
+          Glue.glue.generate_glue
+          Glue.ffi.generate_ffi
+          cps.M.elements
+-         Compiler.pipeline.show_IR
+-         Compiler.pipeline.compile_Wasm.
++         Compiler.pipeline.show_IR.
+ 
+ Recursive Extraction Library Ascii.
+ Recursive Extraction Library BinPos.
+diff --git a/theories/_CoqProject b/theories/_CoqProject
+index d84a538..55a0dca 100644
+--- a/theories/_CoqProject
++++ b/theories/_CoqProject
+@@ -5,7 +5,6 @@
+ -R LambdaANF            CertiRocq.LambdaANF
+ -R ../libraries         CertiRocq.Libraries
+ -R Codegen              CertiRocq.Codegen
+--R CodegenWasm          CertiRocq.CodegenWasm
+ -R Glue                 CertiRocq.Glue
+ -R Extraction           CertiRocq.extraction
+ # -R Runtime              CertiRocq.runtime
+@@ -110,17 +109,6 @@ Codegen/LambdaANF_to_Clight.v
+ Codegen/LambdaANF_to_Clight_stack.v
+ Codegen/toplevel.v
+ 
+-# CodegenWasm
+-CodegenWasm/LambdaANF_to_Wasm_restrictions.v
+-CodegenWasm/LambdaANF_to_Wasm_primitives.v
+-CodegenWasm/LambdaANF_to_Wasm.v
+-CodegenWasm/LambdaANF_to_Wasm_utils.v
+-CodegenWasm/LambdaANF_to_Wasm_correct.v
+-CodegenWasm/LambdaANF_to_Wasm_primitives_correct.v
+-CodegenWasm/LambdaANF_to_Wasm_typing.v
+-CodegenWasm/LambdaANF_to_Wasm_instantiation.v
+-CodegenWasm/toplevel.v
+-CodegenWasm/toplevel_theorem.v
+ 
+ # Glue
+ Glue/glue_utils.v

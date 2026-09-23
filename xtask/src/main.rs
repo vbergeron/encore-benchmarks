@@ -127,9 +127,12 @@ struct TargetArgs {
     ram_kb: u32,
     #[arg(long, default_value_t = 256)]
     flash_kb: u32,
-    /// Encore heap (default: the workload's)
+    /// Encore heap, or CertiRocq arena for C (default: the workload's)
     #[arg(long)]
     heap_bytes: Option<u64>,
+    /// C only: CertiRocq nursery of 2^n words
+    #[arg(long, default_value_t = 10)]
+    c_log_nursery: u32,
     /// Timed runs per case (default: 1 on QEMU, 1000 on boards)
     #[arg(long)]
     reps: Option<u32>,
@@ -286,6 +289,7 @@ fn build_params(a: &TargetArgs, heap: Option<u64>) -> Vec<(&'static str, String)
         ("BENCH_RAM_KB", a.ram_kb.to_string()),
         ("BENCH_FLASH_KB", a.flash_kb.to_string()),
         ("BENCH_CPS_OPTIMIZE", a.cps_optimize.clone()),
+        ("BENCH_C_LOG_NURSERY", a.c_log_nursery.to_string()),
     ];
     if let Some(h) = heap.or(a.heap_bytes) {
         p.push(("BENCH_HEAP_BYTES", h.to_string()));
@@ -384,6 +388,7 @@ fn cmd_run(a: &RunArgs) {
             "heap_bytes": from_start("heap_bytes"),
             "program_bytes": from_start("program_bytes"),
             "cps_optimize": from_start("cps_optimize"),
+            "c_log_nursery": from_start("c_log_nursery"),
             "features": built.as_ref().map_or(vec![], |(_, f)| f.clone()),
         }),
     );

@@ -26,5 +26,11 @@ encodes a frame, then decodes the encoding.
   input list, the pieces, the encoding and the decoded frame are all cons
   lists at 12 bytes per element, where R uses two static buffers (2 KiB).
 
+**C** (CertiRocq, `certirocq/`): 20 KiB arena, 2^10-word nursery. The
+entry point `c_roundtrip` returns the encoding and the decoding (the heap is
+reset between calls). The direct-style C recurses once per byte in
+`read_bytes`, `split_zero` and `dec`, about 200 bytes of C stack per byte,
+so 256 and 1024 bytes do not fit in the RAM budget.
+
 The R variant is the classic single-pass encoder and a bounds-checked
 decoder into static buffers; it allocates nothing.

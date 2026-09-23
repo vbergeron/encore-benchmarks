@@ -19,8 +19,8 @@ latest row for each (workload, variant, board, N).
 | `insns` | QEMU only: `{min, median, p99, max}` instructions per run, calibration subtracted |
 | `cycles` | DWT boards only: `{min, median, p99, max}` cycles per run, calibration subtracted |
 | `stack_peak_bytes` | stack painting; the Encore VM has no call stack, so for E this is the Rust driver and the VM's own frames |
-| `heap_peak_bytes`, `vm_ops` | E, memory profile: heap high-water mark since boot, and VM instructions for one run |
-| `build` | `ram_kb`, `flash_kb` (linker budget), `reps`, `heap_bytes`, `program_bytes` (bytecode), `cps_optimize`, `features` |
+| `heap_peak_bytes`, `vm_ops` | E, memory profile: heap high-water mark since boot, and VM instructions for one run. C, every profile: arena high-water mark since boot (nursery, generations and the 4 KiB `thread_info`) |
+| `build` | `ram_kb`, `flash_kb` (linker budget), `reps`, `heap_bytes` (E heap, C arena), `program_bytes` (bytecode), `cps_optimize`, `c_log_nursery` (C), `features` |
 | `size` | `flash_bytes` (vector table + text + rodata + data), `ram_static_bytes` (data + bss, **includes the Encore heap**), allocated `sections`, `flash_by_crate`, largest `ram_symbols` |
 | `calibration` | overhead of an empty region, already subtracted |
 

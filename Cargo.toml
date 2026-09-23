@@ -6,6 +6,7 @@ members = [
     "xtask",
     "workloads/*/rust",
     "workloads/*/encore",
+    "workloads/*/certirocq",
 ]
 # `cargo build` / `cargo test` with no flags only touch host-buildable crates.
 # Firmware is built by `cargo xtask` with an explicit --target.

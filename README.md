@@ -27,8 +27,9 @@ threats to validity. This repository implements it.
 | W0 smoke workload, variants E and R | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | need instrumentation in `encore_vm` (not in 0.1.4) |
-| Variants C and R+V | not started |
-| W4 (PIN state machine), W6 (COBS), variants E and R | done, run on both QEMU boards |
+| Variant C (CertiRocq), W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
+| Variant R+V | not started |
+| W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |
 
 ## Layout
@@ -39,6 +40,7 @@ crates/bench_harness no_std, on the device: regions, cycles, stack, records
 crates/bench_build   build.rs helper: memory.x from budget, bench_config.rs, bytecode
 theories/            Rocq, shared: EncoreExtraction.v (nat → VM integers, ...)
 workloads/<w>/       one directory per workload, see workloads/README.md
+certirocq/           C variant: CertiRocq nat mapping, runtime, generation scripts
 xtask/               host runner (`cargo xtask`): build, run, record, check
 results/             benchmarks.jsonl (one row per case), see results/README.md
 ```
