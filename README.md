@@ -10,10 +10,9 @@ study compares three ways of shipping the same firmware logic:
 | **C** | Gallina → CertiRocq → Clight → gcc -Os | closest verified competitor |
 | **R** | idiomatic Rust `no_std`, no allocator | performance ceiling, **output oracle** |
 
-The full experiment plan is *Encore — plan d'expérience comparatif* (in
-French): research questions Q1–Q5, metrics, workloads W1–W8, boards and
-threats to validity. This repository implements it, with one change: the
-plan's fourth variant, **R+V** (the Rust checked with Kani or Verus, "verify
+The experiment plan is in [PLAN.md](PLAN.md): research questions Q1–Q5,
+metrics, workloads W1–W8, boards and threats to validity. This repository
+implements it, with one change: the plan's fourth variant, **R+V** (the Rust checked with Kani or Verus, "verify
 the Rust directly"), is not measured. It is an alternative to the approach
 under study rather than a point of comparison: it proves properties of
 hand-written Rust, not the Gallina that E and C compile, so it would answer a
@@ -34,11 +33,12 @@ time.
 | GC pause and GC count metrics | need instrumentation in `encore_vm` (not in 0.1.4) |
 | Variant C (CertiRocq), W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
-| Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |
+| Workloads W1–W3, W5, W7, W8 | not started (W1 next, per [the plan](PLAN.md#priorities-and-steps)) |
 
 ## Layout
 
 ```
+PLAN.md              the experiment plan: questions, metrics, workloads, boards
 boards/              one TOML per board: target, memory origins, runner
 crates/bench_harness no_std, on the device: regions, cycles, stack, records
 crates/bench_build   build.rs helper: memory.x from budget, bench_config.rs, bytecode

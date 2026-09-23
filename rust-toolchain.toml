@@ -1,4 +1,4 @@
-# Same Rust everywhere (plan: "même version de Rust (1.88, comme dans le papier)").
+# Same Rust everywhere (PLAN.md: "the same Rust version (1.88, as in the paper) everywhere").
 [toolchain]
 channel = "1.88"
 profile = "minimal"

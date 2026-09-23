@@ -30,7 +30,7 @@ cortex-m-rt = "0.7"
 cortex-m-semihosting = "0.5"
 panic-halt = "1.0"
 
-# Identical codegen settings for all variants (plan: gcc -Os on the C side).
+# Identical codegen settings for all variants (PLAN.md: gcc -Os on the C side).
 [profile.release]
 opt-level = "s"
 lto = true

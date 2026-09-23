@@ -5,8 +5,8 @@
     directives must be used by every workload: a benchmark that extracts
     [nat] differently from another is not comparable to it.
 
-    Trust assumption (see the plan, "Extraction de nat vers des entiers
-    machine"): [nat] becomes a 24-bit VM integer. This is unproven and wrong
+    Trust assumption (see PLAN.md, "Threats to validity", extraction of
+    [nat] to machine integers): [nat] becomes a 24-bit VM integer. This is unproven and wrong
     past 2^23 - 1; workloads must keep their values under that bound and say
     so in their README. *)
 
