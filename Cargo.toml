@@ -3,12 +3,13 @@ resolver = "3"
 members = [
     "crates/bench_harness",
     "crates/bench_build",
+    "xtask",
     "workloads/*/rust",
     "workloads/*/encore",
 ]
 # `cargo build` / `cargo test` with no flags only touch host-buildable crates.
-# Firmware is built by scripts/bench.py with an explicit --target.
-default-members = ["crates/bench_harness", "crates/bench_build"]
+# Firmware is built by `cargo xtask` with an explicit --target.
+default-members = ["crates/bench_harness", "crates/bench_build", "xtask"]
 
 [workspace.package]
 version = "0.1.0"

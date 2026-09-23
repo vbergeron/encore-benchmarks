@@ -1,6 +1,6 @@
 # Boards
 
-One TOML file per board. `scripts/bench.py` and `crates/bench_build` both read
+One TOML file per board. `xtask` and `crates/bench_build` both read
 them: the build helper writes `memory.x` from the origins and the RAM/flash
 **budget**, the runner picks the target and how to run the ELF.
 

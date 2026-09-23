@@ -21,7 +21,7 @@ threats to validity. This repository implements it.
 |---|---|
 | Device harness (`crates/bench_harness`) | done: regions, DWT cycles, stack painting, JSONL records |
 | Build helper (`crates/bench_build`) | done: board budgets → `memory.x`, Encore bytecode |
-| Runner (`scripts/bench.py`) | done: QEMU instruction counts per region, sizes, oracle check, min-heap search |
+| Runner (`xtask`, run as `cargo xtask`) | done: QEMU instruction counts per region, sizes, oracle check, min-heap search |
 | Rocq with dune (`theories/`, `workloads/*/theories`) | done: shared extraction setup, extraction promoted to `.scm` |
 | QEMU boards (M3 and M33) | done |
 | W0 smoke workload, variants E and R | done, runs on both QEMU boards |
@@ -38,36 +38,37 @@ crates/bench_harness no_std, on the device: regions, cycles, stack, records
 crates/bench_build   build.rs helper: memory.x from budget, bench_config.rs, bytecode
 theories/            Rocq, shared: EncoreExtraction.v (nat → VM integers, ...)
 workloads/<w>/       one directory per workload, see workloads/README.md
-scripts/bench.py     build, run, record, check
+xtask/               host runner (`cargo xtask`): build, run, record, check
 results/             benchmarks.jsonl (one row per case), see results/README.md
 ```
 
 ## Quick start
 
 Requirements: rustup (the toolchain is pinned to Rust 1.88 by
-`rust-toolchain.toml`), `qemu-system-arm`, `arm-none-eabi-binutils` (for
-`nm` and `size`), Python ≥ 3.11. For the Rocq side: Rocq 9.1 with its Stdlib 9.1,
-and dune ≥ 3.21 (`opam install --deps-only .` installs them).
+`rust-toolchain.toml`) and `qemu-system-arm`; the runner is the `xtask`
+crate of the workspace, so there is nothing else to install. For the Rocq
+side: Rocq 9.1 with its Stdlib 9.1, and dune ≥ 3.21 (`opam install
+--deps-only .` installs them).
 
 ```bash
 # Rocq: check the proofs, and re-extract the Scheme (promoted into the tree)
 dune build
 
-# Host unit tests of the harness
+# Host unit tests of the harness, the build helper and the runner
 cargo test
 
 # Run W0 on QEMU (Cortex-M3), both variants, and record the results
-scripts/bench.py run -w w0_smoke -v r
-scripts/bench.py run -w w0_smoke -v e
-scripts/bench.py run -w w0_smoke -v e -b qemu-an505          # Cortex-M33
-scripts/bench.py run -w w0_smoke -v e --cps-optimize off     # isolate the optimizer
-scripts/bench.py run -w w0_smoke -v e --profile memory       # heap peak, VM ops
+cargo xtask run -w w0_smoke -v r
+cargo xtask run -w w0_smoke -v e
+cargo xtask run -w w0_smoke -v e -b qemu-an505          # Cortex-M33
+cargo xtask run -w w0_smoke -v e --cps-optimize off     # isolate the optimizer
+cargo xtask run -w w0_smoke -v e --profile memory       # heap peak, VM ops
 
 # Every variant must reproduce the R oracle's outputs
-scripts/bench.py check
+cargo xtask check
 
 # Smallest Encore heap at which every case still passes
-scripts/bench.py minheap -w w0_smoke -v e
+cargo xtask minheap -w w0_smoke -v e
 ```
 
 `--dry-run` prints the records without appending to `results/`.
@@ -87,14 +88,14 @@ scripts/bench.py minheap -w w0_smoke -v e
    reports min / median / p99 / max cycles, minus the overhead of an empty
    region measured at start-up.
 4. On QEMU, cycles do not exist. The runner traces execution
-   (`-d in_asm,exec,nochain`, streamed through a FIFO) and counts the
-   instructions executed between the two markers of each region, minus the
-   same calibration. The count is exact and reproducible, but it is
+   (`-d in_asm,exec,nochain`, read from QEMU's stderr as it runs) and
+   counts the instructions executed between the two markers of each
+   region, minus the same calibration. The count is exact and reproducible, but it is
    instructions, not time: speed conclusions come from boards only.
 5. The runner adds what only the host knows (commit, Encore and rustc
    versions, board, budget, ELF section sizes and a per-crate flash
    breakdown) and appends one row per case to `results/benchmarks.jsonl`.
-6. `bench.py check` compares each variant's `out_hash` with the latest R
+6. `cargo xtask check` compares each variant's `out_hash` with the latest R
    row for the same workload and N. A mismatch is a bug to fix before
    measuring.
 

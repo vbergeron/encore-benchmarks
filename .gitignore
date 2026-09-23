@@ -6,4 +6,3 @@ _build/
 *.glob
 .*.aux
 .lia.cache
-__pycache__/

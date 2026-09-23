@@ -11,7 +11,7 @@ check) and is the template for W1–W8.
 - **N**: 1, 10, 100, 1000. The result must stay below 2^23 (Encore
   integers), so N ≤ 4095.
 - **Trust**: `nat` is extracted to VM integers (`EncoreExtraction.v`).
-- **Heap**: 32 KiB by default; `bench.py minheap` finds 32 KiB for N = 1000
+- **Heap**: 32 KiB by default; `cargo xtask minheap` finds 32 KiB for N = 1000
   on the lm3s6965 with the CPS optimizer, and N = 1000 does not fit with
   `--cps-optimize off`.
 

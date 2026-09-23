@@ -12,7 +12,7 @@
 //!
 //! Every measured call is a **region**, bracketed by [`region_begin`] and
 //! [`region_end`]. On boards with a DWT the harness reads `CYCCNT` around
-//! it. On QEMU, where cycles mean nothing, `scripts/bench.py` counts the
+//! it. On QEMU, where cycles mean nothing, `cargo xtask` counts the
 //! instructions executed between the two markers from QEMU's execution
 //! trace. Records say how many regions they cover (`"regions"`), so the
 //! runner can match counts to records in order.
