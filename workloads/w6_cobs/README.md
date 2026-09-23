@@ -19,9 +19,12 @@ encodes a frame, then decodes the encoding.
 - **Trust**: `nat` as VM integers; `input_byte` returns bytes; the proof
   holds for any `nat` values, so it does not need the bytes to be < 256.
   `block_max = 254` is extracted to a literal in `Extract.v`.
-- **Heap**: 40 KiB by default. At 1024 bytes the input list, the pieces,
-  the encoding and the decoded frame are all cons lists (12 bytes per
-  element), and the 32 KiB default of W0 overflows.
+- **Heap**: 40 KiB by default, the most that fits the 50 KiB RAM budget
+  next to the driver. `cargo xtask minheap` finds 53.5 KiB for the whole
+  case list: N = 1024 **does not fit** the ST33J2M0 budget (its timed run
+  overflows) and needs `--ram-kb 64 --heap-bytes 54272` (ST33K1M5). The
+  input list, the pieces, the encoding and the decoded frame are all cons
+  lists at 12 bytes per element, where R uses two static buffers (2 KiB).
 
 The R variant is the classic single-pass encoder and a bounds-checked
 decoder into static buffers; it allocates nothing.

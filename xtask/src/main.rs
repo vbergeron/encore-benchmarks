@@ -302,6 +302,14 @@ fn kind(r: &Record) -> &str {
     r.get("kind").and_then(Value::as_str).unwrap_or("")
 }
 
+/// A `case` record whose timed runs all succeeded. The firmware reports a
+/// timed run that failed (e.g. out of heap, when garbage from the previous
+/// run is still reachable) with `"timed_ok": false`: its region counts
+/// measure a partial run and must not be read as a result.
+fn passed(r: &Record) -> bool {
+    kind(r) == "case" && r.get("timed_ok") != Some(&Value::Bool(false))
+}
+
 /// Build and run once. Returns the device records, the ELF and the features.
 fn execute(
     a: &TargetArgs,
@@ -399,7 +407,10 @@ fn cmd_run(a: &RunArgs) {
         .map(|r| {
             let mut row = base.clone();
             row.insert("n".into(), r.get("n").cloned().unwrap_or(Value::Null));
-            row.insert("ok".into(), json!(kind(r) == "case"));
+            row.insert("ok".into(), json!(passed(r)));
+            if kind(r) == "case" && !passed(r) {
+                row.insert("reason".into(), json!("a timed run failed"));
+            }
             for (k, v) in r {
                 if !["kind", "workload", "variant", "n", "regions"].contains(&k.as_str()) {
                     row.insert(k.clone(), v.clone());
@@ -549,7 +560,7 @@ fn cmd_minheap(a: &TargetArgs, step: u64, max_heap: u64) {
                     .iter()
                     .filter(|r| matches!(kind(r), "case" | "fail"))
                     .collect();
-                !cases.is_empty() && cases.iter().all(|r| kind(r) == "case")
+                !cases.is_empty() && cases.iter().all(|r| passed(r))
             }
         };
         println!("  heap {heap:>7} B: {}", if good { "pass" } else { "fail" });

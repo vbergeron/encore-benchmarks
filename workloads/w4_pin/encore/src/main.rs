@@ -8,6 +8,7 @@ use bench_harness::cycles::BoardCycles;
 use bench_harness::semihosting::{exit, Stdout};
 use bench_harness::{FmtBuf, Fnv1a, Harness, Session};
 use core::fmt::Write as _;
+use core::cell::Cell;
 use core::hint::black_box;
 use cortex_m_rt::entry;
 use encore_vm::error::ExternError;
@@ -89,12 +90,20 @@ fn main() -> ! {
             (st.op_count - ops_before, st.arena.peak_heap * core::mem::size_of::<Value>())
         };
 
+        // A timed run can fail where the untimed one passed (the heap is not
+        // in the same state); the runner then marks the case failed.
+        let timed_ok = Cell::new(true);
         let vm = &mut vm;
         s.case(
             n,
             hash.finish(),
-            || { let _ = black_box(run(vm, black_box(n))); },
+            || {
+                if black_box(run(vm, black_box(n))).is_err() {
+                    timed_ok.set(false);
+                }
+            },
             |r| {
+                let r = r.bool("timed_ok", timed_ok.get());
                 #[cfg(feature = "stats")]
                 let r = r.u64("vm_ops", ops).u32("heap_peak_bytes", heap_peak as u32);
                 r
