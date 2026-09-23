@@ -1,5 +1,5 @@
-(lang dune 3.8)
-(using coq 0.8)
+(lang dune 3.21)
+(using rocq 0.11)
 (name encore-benchmarks)
 
 (generate_opam_files true)
@@ -11,5 +11,6 @@
  (synopsis "Rocq side of the Encore benchmarks: workload proofs and extraction")
  (allow_empty)
  (depends
+  (dune (>= 3.21))
   (rocq-core (and (>= 9.1) (< 9.2)))
   (rocq-stdlib (and (>= 9.1) (< 9.2)))))

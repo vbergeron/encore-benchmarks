@@ -3,7 +3,7 @@ opam-version: "2.0"
 synopsis:
   "Rocq side of the Encore benchmarks: workload proofs and extraction"
 depends: [
-  "dune" {>= "3.8"}
+  "dune" {>= "3.21" & >= "3.21"}
   "rocq-core" {>= "9.1" & < "9.2"}
   "rocq-stdlib" {>= "9.1" & < "9.2"}
   "odoc" {with-doc}
@@ -22,3 +22,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
+x-maintenance-intent: ["(latest)"]

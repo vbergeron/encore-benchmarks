@@ -28,7 +28,7 @@ Copy `w0_smoke/` and rename. Everything below `<w>/` is optional except
 workloads/<w>/
   README.md             property, N range, trust assumptions (e.g. values < 2^23)
   theories/
-    dune                coq.theory EncoreBench.<W> + extraction rule (promote)
+    dune                rocq.theory EncoreBench.<W> + extraction rule (promote)
     <Spec>.v            program, specification, proofs
     Extract.v           imports EncoreBench.Common.EncoreExtraction, extracts the entry points
     <w>.scm             promoted by `dune build`, committed
