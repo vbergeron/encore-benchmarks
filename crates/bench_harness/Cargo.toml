@@ -10,6 +10,8 @@ publish.workspace = true
 default = ["semihosting"]
 # Output and exit through ARM semihosting (QEMU, or a probe with semihosting).
 semihosting = ["dep:cortex-m-semihosting"]
+# Calling CertiRocq-generated C and reading its values (C variants).
+certirocq = []
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))'.dependencies]
 cortex-m = { workspace = true }

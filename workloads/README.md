@@ -10,9 +10,9 @@ smoke test for the pipeline; W1–W8 are the study.
 | W1 | APDU + BER-TLV parser (ISO 7816) | totality, no out-of-bounds, `encode (decode x) = x` | APDU 5 → 261 B, TLV depth | — |
 | W2 | Transaction decoder (RLP / Bitcoin) | what is displayed is what is signed | fields, calldata size | — |
 | W3 | BIP32 path policy and allow-list | only compliant paths and amounts are signed | rules, path depth | — |
-| W4 | PIN state machine (ISO 7816 VERIFY) | counter never goes up without a successful verify | trace length | — |
+| W4 | PIN state machine (ISO 7816 VERIFY) | counter never goes up without a successful verify | trace length | E, R, C |
 | W5 | A/B firmware update, anti-rollback | version never decreases; a valid slot always exists | steps, injected power cuts | — |
-| W6 | COBS / HDLC stream framing | round trip; bounded expansion | frame 16 → 1024 B | — |
+| W6 | COBS stream framing | round trip; no zero in the output | frame 16 → 1024 B | E, R, C |
 | W7 | FIDO credential store (persistent RB tree) | balance invariants; `lookup` after `insert` | 10 → 500 entries | — |
 | W8 | CRC-16 / CRC-32 in Gallina | equals the polynomial definition | block size | — |
 
@@ -35,7 +35,7 @@ workloads/<w>/
   vectors/vectors.rs    frozen inputs, `include!`d by every variant
   rust/                 R   — package `<w>-r`  (oracle)
   encore/               E   — package `<w>-e`, feature `stats`
-  certirocq/            C   — package `<w>-c`  (to come)
+  certirocq/            C   — package `<w>-c`: CompileC.v, gen/ (see certirocq/README.md)
   verified/             R+V — package `<w>-rv` (to come)
 ```
 

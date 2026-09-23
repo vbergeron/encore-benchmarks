@@ -8,8 +8,10 @@ publish.workspace = true
 
 [features]
 encore = ["dep:encore_compiler", "dep:encore_scheme"]
+certirocq = ["dep:cc"]
 
 [dependencies]
 toml = { version = "0.8", default-features = false, features = ["parse"] }
 encore_compiler = { workspace = true, optional = true }
 encore_scheme = { workspace = true, optional = true }
+cc = { version = "1", optional = true }

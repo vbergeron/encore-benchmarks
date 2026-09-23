@@ -12,6 +12,8 @@
 //!
 //! With the `encore` feature, [`encore::compile_scheme`] also turns a
 //! Rocq-extracted `.scm` file into bytecode for `encore_vm::encore_program!`.
+//! With the `certirocq` feature, [`certirocq::compile_c`] compiles the
+//! CertiRocq-generated C of a workload and the runtime in `certirocq/`.
 //!
 //! Every parameter comes from an environment variable so that
 //! `cargo xtask` can sweep them without editing files:
@@ -24,6 +26,7 @@
 //! | `BENCH_HEAP_BYTES` | workload default | Encore heap size |
 //! | `BENCH_REPS` | `1` on QEMU, `1000` on boards | timed runs per case |
 //! | `BENCH_CPS_OPTIMIZE` | `on` | `off` compiles Encore without the CPS optimizer |
+//! | `BENCH_C_LOG_NURSERY` | `10` | CertiRocq nursery of 2^n words (C variant) |
 
 use std::env;
 use std::fmt::Write as _;
@@ -97,6 +100,8 @@ pub struct Config {
     pub heap_bytes: usize,
     pub reps: u32,
     pub cps_optimize: bool,
+    /// CertiRocq nursery size, log2 of words (C variant only).
+    pub c_log_nursery: u32,
 }
 
 /// Configure a benchmark firmware build. Call once from `build.rs`.
@@ -114,6 +119,7 @@ pub fn configure(default_heap_bytes: usize) -> Config {
         "BENCH_HEAP_BYTES",
         "BENCH_REPS",
         "BENCH_CPS_OPTIMIZE",
+        "BENCH_C_LOG_NURSERY",
     ] {
         println!("cargo::rerun-if-env-changed={var}");
     }
@@ -140,6 +146,7 @@ pub fn configure(default_heap_bytes: usize) -> Config {
         heap_bytes: env_num("BENCH_HEAP_BYTES", default_heap_bytes),
         reps: env_num("BENCH_REPS", if board.dwt { 1000 } else { 1 }),
         cps_optimize: env::var("BENCH_CPS_OPTIMIZE").map_or(true, |v| v != "off"),
+        c_log_nursery: env_num("BENCH_C_LOG_NURSERY", 10),
         board,
         ram_kb,
         flash_kb,
@@ -236,6 +243,59 @@ pub mod encore {
         let cfg_path = out.join("bench_config.rs");
         let mut cfg = fs::read_to_string(&cfg_path).expect("bench_config.rs");
         let _ = writeln!(cfg, "pub const PROGRAM_BYTES: usize = {len};");
+        fs::write(cfg_path, cfg).expect("write bench_config.rs");
+    }
+}
+
+#[cfg(feature = "certirocq")]
+pub mod certirocq {
+    //! Compile the C variant: CertiRocq-generated C plus the runtime.
+
+    use super::{out_dir, repo_root, Config};
+    use std::fmt::Write as _;
+    use std::fs;
+    use std::path::Path;
+
+    /// Compile every `.c` file of `gen_dir` (promoted by `dune build
+    /// @certirocq`) with the vendored CertiRocq runtime and `bench_rt.c`
+    /// (`certirocq/runtime/`), with the plan's `-Os`, for the board's
+    /// target. The arena is `config.heap_bytes`.
+    ///
+    /// Also appends `C_LOG_NURSERY` to `bench_config.rs`.
+    pub fn compile_c(gen_dir: &Path, config: &Config) {
+        let rt = repo_root().join("certirocq").join("runtime");
+        println!("cargo::rerun-if-changed={}", rt.display());
+        println!("cargo::rerun-if-changed={}", gen_dir.display());
+
+        let mut sources: Vec<_> = fs::read_dir(gen_dir)
+            .unwrap_or_else(|e| panic!("cannot read {}: {e}", gen_dir.display()))
+            .map(|e| e.expect("dir entry").path())
+            .filter(|p| p.extension().is_some_and(|x| x == "c"))
+            .collect();
+        sources.sort();
+        assert!(!sources.is_empty(), "no generated C in {}", gen_dir.display());
+
+        cc::Build::new()
+            .files(&sources)
+            .file(rt.join("gc_stack.c"))
+            .file(rt.join("bench_rt.c"))
+            // The shims come first: they stand in for the libc headers.
+            .include(rt.join("shim"))
+            .include(&rt)
+            .include(gen_dir)
+            .define("BENCH_ARENA_BYTES", config.heap_bytes.to_string().as_str())
+            .define("LOG_NURSERY_SIZE", config.c_log_nursery.to_string().as_str())
+            .opt_level_str("s")
+            .flag("-std=gnu11")
+            .flag("-ffreestanding")
+            .flag("-ffunction-sections")
+            .flag("-fdata-sections")
+            .warnings(false)
+            .compile("certirocq_program");
+
+        let cfg_path = out_dir().join("bench_config.rs");
+        let mut cfg = fs::read_to_string(&cfg_path).expect("bench_config.rs");
+        let _ = writeln!(cfg, "pub const C_LOG_NURSERY: u32 = {};", config.c_log_nursery);
         fs::write(cfg_path, cfg).expect("write bench_config.rs");
     }
 }

@@ -24,6 +24,8 @@
 
 #![no_std]
 
+#[cfg(feature = "certirocq")]
+pub mod certirocq;
 pub mod cycles;
 pub mod hash;
 pub mod record;

@@ -33,22 +33,29 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Install QEMU
+      - name: Install QEMU and the ARM C compiler (C variants)
         run: |
           sudo apt-get update -q
-          sudo apt-get install -y -q --no-install-recommends qemu-system-arm
+          sudo apt-get install -y -q --no-install-recommends qemu-system-arm gcc-arm-none-eabi
       - name: Toolchain (from rust-toolchain.toml)
         run: rustup show active-toolchain || rustup toolchain install
       - uses: Swatinem/rust-cache@v2
       - name: Host tests (harness, build helper, runner)
         run: cargo test
-      - name: W0 on QEMU (Cortex-M3 and Cortex-M33)
+      - name: Workloads on QEMU (Cortex-M3 and Cortex-M33)
         run: |
-          for board in qemu-lm3s6965 qemu-an505; do
-            for v in r e; do
-              cargo xtask run -w w0_smoke -v "$v" -b "$board" --out ci.jsonl
+          for w in w0_smoke w4_pin w6_cobs; do
+            for board in qemu-lm3s6965 qemu-an505; do
+              for v in r e; do
+                cargo xtask run -w "$w" -v "$v" -b "$board" --out ci.jsonl
+              done
+              cargo xtask run -w "$w" -v e -b "$board" --profile memory --out ci.jsonl
             done
-            cargo xtask run -w w0_smoke -v e -b "$board" --profile memory --out ci.jsonl
+          done
+          for w in w4_pin w6_cobs; do
+            for board in qemu-lm3s6965 qemu-an505; do
+              cargo xtask run -w "$w" -v c -b "$board" --out ci.jsonl
+            done
           done
       - name: Every variant matches the R oracle
         run: cargo xtask check --results ci.jsonl

@@ -12,10 +12,14 @@
 
 From Stdlib Require Extraction.
 
-(** [Nat.*] below must be [Init.Nat.*], the constants [+], [*], [=?] ...
-    unfold to. Importing [Arith] first would make [Nat] resolve to
-    [PeanoNat.Nat], whose constants are distinct, and the directives would
-    silently not apply. Hence the fully qualified names. *)
+(** The directives name [Init.Nat.*], the constants [+], [*], [-] unfold
+    to, and also [PeanoNat.Nat.*]: importing [Arith] makes [Nat] and the
+    [=?], [<=?], [<?] notations resolve to [PeanoNat.Nat], whose constants
+    are aliases that extraction treats as distinct. Without the second set
+    the directives would silently not apply and [=?] would extract to a
+    recursive Gallina [eqb]. Hence the fully qualified names. *)
+
+From Stdlib Require Arith.PeanoNat.
 
 Extraction Language Scheme.
 
@@ -35,4 +39,15 @@ Extract Constant Init.Nat.eqb =>
 Extract Constant Init.Nat.leb =>
   "(lambda (a) (lambda (b) (if (< b a) `(False) `(True))))".
 Extract Constant Init.Nat.ltb =>
+  "(lambda (a) (lambda (b) (if (< a b) `(True) `(False))))".
+
+Extract Constant PeanoNat.Nat.add => "(lambda (n) (lambda (m) (+ n m)))".
+Extract Constant PeanoNat.Nat.mul => "(lambda (n) (lambda (m) (* n m)))".
+Extract Constant PeanoNat.Nat.sub =>
+  "(lambda (n) (lambda (m) (if (< n m) 0 (- n m))))".
+Extract Constant PeanoNat.Nat.eqb =>
+  "(lambda (a) (lambda (b) (if (= a b) `(True) `(False))))".
+Extract Constant PeanoNat.Nat.leb =>
+  "(lambda (a) (lambda (b) (if (< b a) `(False) `(True))))".
+Extract Constant PeanoNat.Nat.ltb =>
   "(lambda (a) (lambda (b) (if (< a b) `(True) `(False))))".
