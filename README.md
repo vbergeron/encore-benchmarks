@@ -36,6 +36,10 @@ time.
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |
 
+Partial conclusions from the W0, W4 and W6 results, written while waiting for
+GC instrumentation in `encore_vm`, are in
+[`results/CONCLUSIONS.md`](results/CONCLUSIONS.md).
+
 ## Layout
 
 ```
@@ -46,7 +50,8 @@ theories/            Rocq, shared: EncoreExtraction.v (nat → VM integers, ...)
 workloads/<w>/       one directory per workload, see workloads/README.md
 certirocq/           C variant: CertiRocq nat mapping, runtime, generation scripts
 xtask/               host runner (`cargo xtask`): build, run, record, check
-results/             benchmarks.jsonl (one row per case), see results/README.md
+results/             benchmarks.jsonl (one row per case), see results/README.md;
+                     partial conclusions in results/CONCLUSIONS.md
 ```
 
 ## Quick start
