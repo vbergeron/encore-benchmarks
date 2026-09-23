@@ -31,7 +31,7 @@ time.
 | QEMU boards (M3 and M33) | done |
 | W0 smoke workload, variants E and R | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
-| GC pause and GC count metrics | need instrumentation in `encore_vm` (not in 0.1.4) |
+| GC pause and GC count metrics | `encore_vm` 0.1.5 exposes them (`stats` feature, `GcStats`); not yet recorded by the workloads |
 | Variant C (CertiRocq), W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | Workloads W1–W3, W5, W7, W8 | not started (W1 next, per the plan) |

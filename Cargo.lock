@@ -220,18 +220,18 @@ checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
 
 [[package]]
 name = "encore_compiler"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "981e32cd011b80c46b79d28a48164b3415297d24aba3bde9bf5897ae4ebdcafd"
+checksum = "4e427c49b104fc142ef3fb67e206b1ae1c0f08dd5d395a22ad82ed2a1f5a6c79"
 dependencies = [
  "encore_vm",
 ]
 
 [[package]]
 name = "encore_derive"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "61322a511101dde3626326a3ae79e1ded1cee6c767e35de24eee9eb0e4ee7eee"
+checksum = "e945bc74e01894a145ae13b06853f018c32edcb1909ef9694e8f8e7091ab832b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -240,9 +240,9 @@ dependencies = [
 
 [[package]]
 name = "encore_scheme"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b62a69062d7c46b3c835970fb7933a50f81a81506328e1fb22409228a8cd0727"
+checksum = "82adfbe2530f49c7a8549e20b2d18c7f30fc1b456f3e25d6bf90052f2f408545"
 dependencies = [
  "encore_compiler",
  "encore_vm",
@@ -250,9 +250,9 @@ dependencies = [
 
 [[package]]
 name = "encore_vm"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18cd788953f856e26e6ad6e7496053cc051b5ab21a70512cd70b344338cedd17"
+checksum = "ba778f73fb6bc5bb7de93760d334d1ef0fe4e5985178ed49bb97e6e3d2e8678d"
 dependencies = [
  "encore_derive",
 ]
