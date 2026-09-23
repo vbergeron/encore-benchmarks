@@ -2,7 +2,8 @@
 
 Each workload is a `step`-style function whose bugs would be security
 holes or field failures, with one precise property proved in Rocq. W0 is a
-smoke test for the pipeline; W1–W8 are the study.
+smoke test for the pipeline; W1–W8 are the study, as chosen in
+[PLAN.md](../PLAN.md#workloads).
 
 | # | Workload | Property proved | N | Status |
 |---|---|---|---|---|
@@ -16,7 +17,7 @@ smoke test for the pipeline; W1–W8 are the study.
 | W7 | FIDO credential store (persistent RB tree) | balance invariants; `lookup` after `insert` | 10 → 500 entries | — |
 | W8 | CRC-16 / CRC-32 in Gallina | equals the polynomial definition | block size | — |
 
-Order, per the plan: W4 then W1 (in all three variants), then W2 and W7,
+Order, per [the plan](../PLAN.md#priorities-and-steps): W4 then W1 (in all three variants), then W2 and W7,
 then W3, W5, W6, W8.
 
 ## Layout of a workload
