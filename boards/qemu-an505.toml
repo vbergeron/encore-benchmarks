@@ -1,0 +1,14 @@
+# QEMU MPS2 AN505 (Cortex-M33, ARMv8-M Mainline): closest QEMU model of the
+# ST33 target core. Runs in the secure state, from the secure aliases of
+# SSRAM1 (code) and SSRAM2 (data). Instruction counts only.
+description = "QEMU mps2-an505, Cortex-M33"
+core = "cortex-m33"
+target = "thumbv8m.main-none-eabi"
+flash_origin = 0x10000000
+flash_kb = 4096
+ram_origin = 0x38000000
+ram_kb = 2048
+cycles = "none"
+runner = "qemu"
+qemu_machine = "mps2-an505"
+qemu_cpu = "cortex-m33"

@@ -1,0 +1,40 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/bench_harness",
+    "crates/bench_build",
+    "workloads/*/rust",
+    "workloads/*/encore",
+]
+# `cargo build` / `cargo test` with no flags only touch host-buildable crates.
+# Firmware is built by scripts/bench.py with an explicit --target.
+default-members = ["crates/bench_harness", "crates/bench_build"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+publish = false
+
+# One set of versions for every variant, so they differ only in their logic.
+[workspace.dependencies]
+bench_harness = { path = "crates/bench_harness" }
+bench_build = { path = "crates/bench_build" }
+encore_vm = { version = "=0.1.4", features = ["derive"] }
+encore_compiler = "=0.1.4"
+encore_scheme = "=0.1.4"
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+cortex-m-semihosting = "0.5"
+panic-halt = "1.0"
+
+# Identical codegen settings for all variants (plan: gcc -Os on the C side).
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+panic = "abort"
+debug = true   # symbols only; needed by the size breakdown, not flashed
+
+[profile.dev]
+panic = "abort"

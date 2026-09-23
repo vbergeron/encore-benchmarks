@@ -1,0 +1,5 @@
+# Same Rust everywhere (plan: "même version de Rust (1.88, comme dans le papier)").
+[toolchain]
+channel = "1.88"
+profile = "minimal"
+targets = ["thumbv7m-none-eabi", "thumbv8m.main-none-eabi", "thumbv7em-none-eabi"]

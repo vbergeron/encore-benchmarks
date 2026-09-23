@@ -1,0 +1,3 @@
+(coq.theory
+ (name EncoreBench.Common)
+ (theories Stdlib))
