@@ -26,7 +26,9 @@ jobs:
           chown -R "$user" "$GITHUB_WORKSPACE"
           # --deps-only installs rocq-encore from the pin-depends of
           # encore-benchmarks.opam; Rocq and Stdlib are already in the image.
-          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && opam install -y --deps-only . && rocq --version && dune build"
+          # The image pins rocq-stdlib 9.0.0, which works with Rocq 9.1 but
+          # fails the ">= 9.1" bound of both opam files: keep the image's.
+          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && opam install -y --deps-only --ignore-constraints-on=rocq-stdlib . && rocq --version && dune build"
       - name: Promoted Scheme is up to date
         run: git -c safe.directory='*' diff --exit-code -- 'workloads/*/theories/*.scm'
 
