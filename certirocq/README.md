@@ -13,7 +13,7 @@ workloads/<w>/certirocq/
 certirocq/
   theories/BenchNat.v   nat as machine integers, Nat.* and input_byte as C functions
   runtime/              CertiRocq's GC (vendored) and bench_rt.c, the bare-metal glue
-  generate.sh           regenerate every gen/ (needs the toolchain)
+  generate.sh           regenerate gen/, all or the workloads named (needs the toolchain)
   toolchain.sh          build CertiRocq and its dependencies from source
 ```
 
@@ -21,20 +21,23 @@ Building firmware needs `gcc-arm-none-eabi` only. Regenerating the C needs
 CertiRocq: `opam install rocq-certirocq`, or `toolchain.sh` where opam's
 repository is not reachable (it applies `certirocq-no-wasm.patch`, which
 drops the Wasm backend and its dependencies; the C backend is untouched).
+`generate.sh w1_apdu w2_rlp` regenerates only the workloads named.
 `BenchNat.v` takes `input_byte` from `Encore.Extraction.ExtrEncoreInput`.
-The committed `gen/` predates that import (it was generated when
-`input_byte` came from this repository's own `EncoreInput.v`) and was kept
-verbatim: `input_byte` is registered as `bench_input_byte` and no other
-name from that module reaches the C, so only the module path differs.
+The committed `gen/` of W4 and W6 predates that import (it was generated
+when `input_byte` came from this repository's own `EncoreInput.v`) and was
+kept verbatim: `input_byte` is registered as `bench_input_byte` and no
+other name from that module reaches the C, so only the module path
+differs. W0, W1 and W2 were generated with the current `BenchNat.v`.
 
 ## Same program, same assumptions as E
 
-- **Same Gallina**: the entry points of `theories/` (W4 `run`; W6 the
-  encoder and decoder, wrapped in `c_roundtrip`, which returns both
-  results because the heap is reset between calls).
+- **Same Gallina**: the entry points of `theories/` (W0, W1, W2 and W4
+  `run`; W6 the encoder and decoder, wrapped in `c_roundtrip`, which
+  returns both results because the heap is reset between calls).
 - **`nat` as machine integers**: `BenchNat.v` maps `nat` to 31-bit
   integers (zero, successor and case analysis realised in C) and
-  `Nat.add`, `sub`, `mul`, `pred`, `eqb`, `leb`, `ltb` to C functions: the
+  `Nat.add`, `sub`, `mul`, `pred`, `eqb`, `leb`, `ltb`, `div`, `modulo`,
+  `land` to C functions: the
   counterpart of Encore's `ExtrEncore.v` for E, and the same unproven
   assumption. The mapping is applied by an erasure pass MetaRocq only runs
   with `-unsafe-erasure`, which is therefore on: that pass, too, is

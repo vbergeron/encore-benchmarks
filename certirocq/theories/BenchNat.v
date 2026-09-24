@@ -7,13 +7,14 @@
       realised in C by certirocq/runtime/bench_rt.c: zero, successor and
       case analysis. Unproven, like the Encore mapping, and wrong past
       2^30 - 1.
-    - [Nat.add], [sub], [mul], [pred], [eqb], [leb], [ltb] become C
-      functions on those integers instead of recursive Gallina.
+    - [Nat.add], [sub], [mul], [pred], [eqb], [leb], [ltb], [div],
+      [modulo] and [land] become C functions on those integers instead of
+      recursive Gallina.
     - [input_byte] (ExtrEncoreInput.v) reads the host's input buffer.
 
-    ExtrEncore maps more [Nat] operations than this file (min, max, div,
-    modulo, bitwise, ...). No workload uses them yet; one that does must
-    register them here too, or C would run them as recursive Gallina.
+    ExtrEncore maps more [Nat] operations than this file (min, max, lor,
+    shifts, ...). No workload uses them yet; one that does must register
+    them here too, or C would run them as recursive Gallina.
 
     The nat mapping is applied by an erasure pass that MetaRocq only runs
     with [-unsafe-erasure] (it is not verified), so every CompileC.v
@@ -42,5 +43,8 @@ CertiRocq Register [
   Corelib.Init.Nat.eqb => "bench_nat_eqb",
   Corelib.Init.Nat.leb => "bench_nat_leb",
   Corelib.Init.Nat.ltb => "bench_nat_ltb",
+  Corelib.Init.Nat.div => "bench_nat_div",
+  Corelib.Init.Nat.modulo => "bench_nat_mod",
+  Corelib.Init.Nat.land => "bench_nat_land",
   input_byte => "bench_input_byte"
 ] Include [ "bench_rt.h" ].

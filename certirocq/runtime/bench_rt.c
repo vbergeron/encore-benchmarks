@@ -114,10 +114,20 @@ value bench_nat_mul(value a, value b) { return Val_long(Long_val(a) * Long_val(b
 value bench_nat_eqb(value a, value b) { return BOOL(a == b); }
 value bench_nat_leb(value a, value b) { return BOOL(a <= b); }
 value bench_nat_ltb(value a, value b) { return BOOL(a < b); }
+/* Gallina's division and modulo are total: n / 0 = 0 and n mod 0 = n. */
+value bench_nat_div(value a, value b) {
+  return b == Val_long(0) ? Val_long(0) : Val_long(Long_val(a) / Long_val(b));
+}
+value bench_nat_mod(value a, value b) {
+  return b == Val_long(0) ? a : Val_long(Long_val(a) % Long_val(b));
+}
+value bench_nat_land(value a, value b) { return a & b; } /* the tag bits stay 1 */
 
-/* Integer literals for the named constants of the workloads (Pin.v,
-   Cobs.v): the counterpart of their Extract Constant directives for
-   Encore. Otherwise a literal such as 164 would be 164 calls to
-   bench_nat_succ. */
+/* Integer literals for the named constants of the workloads (Apdu.v,
+   Rlp.v, Pin.v, Cobs.v): the counterpart of their Extract Constant
+   directives for Encore. Otherwise a literal such as 164 would be 164
+   calls to bench_nat_succ. */
 #define LIT(n) value bench_lit_##n(void) { return Val_long(n); }
-LIT(3) LIT(8) LIT(10) LIT(32) LIT(36) LIT(44) LIT(164) LIT(254)
+LIT(3) LIT(8) LIT(10) LIT(16) LIT(20) LIT(31) LIT(32) LIT(36) LIT(44) LIT(48)
+LIT(56) LIT(57) LIT(87) LIT(128) LIT(129) LIT(130) LIT(164) LIT(183)
+LIT(184) LIT(192) LIT(247) LIT(248) LIT(254) LIT(256)
