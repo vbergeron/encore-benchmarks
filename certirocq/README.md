@@ -21,6 +21,12 @@ Building firmware needs `gcc-arm-none-eabi` only. Regenerating the C needs
 CertiRocq: `opam install rocq-certirocq`, or `toolchain.sh` where opam's
 repository is not reachable (it applies `certirocq-no-wasm.patch`, which
 drops the Wasm backend and its dependencies; the C backend is untouched).
+Regenerating also needs `rocq-encore` installed (as for `dune build`):
+`BenchNat.v` takes `input_byte` from `Encore.Extraction.ExtrEncoreInput`.
+The committed `gen/` predates that import (it was generated when
+`input_byte` came from this repository's own `EncoreInput.v`) and was kept
+verbatim: `input_byte` is registered as `bench_input_byte` and no other
+name from that module reaches the C, so only the module path differs.
 
 ## Same program, same assumptions as E
 
