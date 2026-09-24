@@ -22,9 +22,9 @@ publish = false
 [workspace.dependencies]
 bench_harness = { path = "crates/bench_harness" }
 bench_build = { path = "crates/bench_build" }
-encore_vm = { version = "=0.1.5", features = ["derive"] }
-encore_compiler = "=0.1.5"
-encore_scheme = "=0.1.5"
+encore_vm = { version = "=0.1.6", features = ["derive"] }
+encore_compiler = "=0.1.6"
+encore_scheme = "=0.1.6"
 cortex-m = "0.7"
 cortex-m-rt = "0.7"
 cortex-m-semihosting = "0.5"

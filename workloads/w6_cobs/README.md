@@ -14,15 +14,16 @@ encodes a frame, then decodes the encoding.
   with about one zero in 16, plus a 300-byte zero-free run at offset 600 so
   that the 1024-byte frame exercises the 254-byte block limit (code 0xFF).
 - **Input**: the frame is in flash and read byte by byte through the
-  `input_byte` extern (`theories/EncoreInput.v`). The E output is the
+  `input_byte` extern (`vendor/encore-extraction/ExtrEncoreInput.v`). The E output is the
   encoded list and the decoded list, hashed in that order, as in R.
 - **Trust**: `nat` as VM integers; `input_byte` returns bytes; the proof
   holds for any `nat` values, so it does not need the bytes to be < 256.
   `block_max = 254` is extracted to a literal in `Extract.v`.
 - **Heap**: 40 KiB by default, the most that fits the 50 KiB RAM budget
-  next to the driver. `cargo xtask minheap` finds 53.5 KiB for the whole
-  case list: N = 1024 **does not fit** the ST33J2M0 budget (its timed run
-  overflows) and needs `--ram-kb 64 --heap-bytes 54272` (ST33K1M5). The
+  next to the driver. `cargo xtask minheap` finds 32.25 KiB for the whole
+  case list, so every N fits the ST33J2M0 budget. Before encore 0.1.6 it
+  found 53.5 KiB and N = 1024 did not fit: the VM kept the previous call's
+  lists reachable from its registers, and the timed run overflowed. The
   input list, the pieces, the encoding and the decoded frame are all cons
   lists at 12 bytes per element, where R uses two static buffers (2 KiB).
 

@@ -7,7 +7,7 @@ root="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$root"
 dune build
 b="$root/_build/default"
-common=(-Q "$b/theories" EncoreBench.Common -Q "$root/certirocq/theories" EncoreBench.CertiRocq)
+common=(-Q "$b/vendor/encore-extraction" Encore.Extraction -Q "$root/certirocq/theories" EncoreBench.CertiRocq)
 rocq compile "${common[@]}" certirocq/theories/BenchNat.v
 for dir in workloads/*/certirocq; do
   [ -f "$dir/CompileC.v" ] || continue

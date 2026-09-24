@@ -88,7 +88,7 @@ value bench_input_byte(value i) {
 
 /* ---- nat as machine integers (certirocq/theories/BenchNat.v) ----
 
-   The counterpart of theories/EncoreExtraction.v for Encore, and the same
+   The counterpart of Encore.Extraction.ExtrEncore, and the same
    unproven assumption: a nat fits in a machine integer (31 bits here,
    Encore has 24). Values are tagged: Val_long(n) = 2n + 1. */
 

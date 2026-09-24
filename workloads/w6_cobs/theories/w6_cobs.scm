@@ -13,13 +13,9 @@
      ((Nil) m)
      ((Cons a l1) `(Cons ,a ,(@ app l1 m))))))
   
-(define pred (lambda (n)
-  ((lambdas (fO fS n) (if (= n 0) (fO 0) (fS (- n 1))))
-     (lambda (_) n)
-     (lambda (u) u)
-     n)))
+(define pred (lambda (a) (int-sub-sat a 1)))
 
-(define eqb (lambda (a) (lambda (b) (if (= a b) `(True) `(False)))))
+(define eqb (lambda (a) (lambda (b) (= a b))))
   
 (define input_byte (extern (slot 0) i))
 

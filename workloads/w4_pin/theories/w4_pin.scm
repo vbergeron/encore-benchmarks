@@ -3,9 +3,9 @@
 (load "macros_extr.scm")
 
 
-(define add (lambda (n) (lambda (m) (+ n m))))
+(define add (lambda (a) (lambda (b) (+ a b))))
   
-(define eqb (lambda (a) (lambda (b) (if (= a b) `(True) `(False)))))
+(define eqb (lambda (a) (lambda (b) (= a b))))
   
 (define firstn (lambdas (n l)
   ((lambdas (fO fS n) (if (= n 0) (fO 0) (fS (- n 1))))

@@ -1,7 +1,7 @@
 (rocq.theory
  (name EncoreBench.W0)
  (modules Smoke)
- (theories Stdlib EncoreBench.Common))
+ (theories Stdlib Encore.Extraction))
 
 ; Extraction is a separate rule because dune's rocq.extraction stanza only
 ; knows OCaml. The .scm is promoted into the source tree and committed, so
@@ -11,7 +11,7 @@
  (mode promote)
  (deps
   Smoke.vo
-  %{project_root}/theories/EncoreExtraction.vo)
+  %{project_root}/vendor/encore-extraction/ExtrEncore.vo)
  (action
-  (run rocq compile -w -extraction-default-directory -Q %{project_root}/theories EncoreBench.Common -Q . EncoreBench.W0
+  (run rocq compile -w -extraction-default-directory -Q %{project_root}/vendor/encore-extraction Encore.Extraction -Q . EncoreBench.W0
    %{dep:Extract.v})))

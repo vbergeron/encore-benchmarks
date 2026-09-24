@@ -1,0 +1,8 @@
+; Encore's extraction theory, copied verbatim from rocq/ of
+; vbergeron/encore at the 0.1.6 release (commit d8e32a1), the version the
+; Rust crates use. Only the two modules the workloads import are copied.
+; Update both together: copy the files again when bumping Encore.
+(rocq.theory
+ (name Encore.Extraction)
+ (modules ExtrEncore ExtrEncoreInput)
+ (theories Stdlib))

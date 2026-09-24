@@ -10,7 +10,7 @@
 
 From Stdlib Require Import Arith List Lia Bool.
 Import ListNotations.
-From EncoreBench.Common Require Import EncoreInput.
+From Encore.Extraction Require Import ExtrEncoreInput.
 
 (** Constants. Each one is extracted to a VM integer literal by
     [Extract.v]: a [nat] literal would otherwise extract to a chain of

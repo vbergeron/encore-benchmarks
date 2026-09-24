@@ -29,7 +29,7 @@ mod vectors {
 encore_vm::encore_program!(env!("OUT_DIR"));
 encore_vm::encore_heap!(HEAP, config::HEAP_BYTES);
 
-/// Extern slot 0, `input_byte` in theories/EncoreInput.v: byte `i` of the
+/// Extern slot 0, `input_byte` in Encore.Extraction.ExtrEncoreInput: byte `i` of the
 /// frame. The argument is the extern's one-field argument pack.
 fn input_byte(vm: &mut Vm, arg: Value) -> Result<Value, ExternError> {
     let i = vm.ctor_field(arg, 0).int_value()?;

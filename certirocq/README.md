@@ -21,6 +21,11 @@ Building firmware needs `gcc-arm-none-eabi` only. Regenerating the C needs
 CertiRocq: `opam install rocq-certirocq`, or `toolchain.sh` where opam's
 repository is not reachable (it applies `certirocq-no-wasm.patch`, which
 drops the Wasm backend and its dependencies; the C backend is untouched).
+`BenchNat.v` takes `input_byte` from `Encore.Extraction.ExtrEncoreInput`.
+The committed `gen/` predates that import (it was generated when
+`input_byte` came from this repository's own `EncoreInput.v`) and was kept
+verbatim: `input_byte` is registered as `bench_input_byte` and no other
+name from that module reaches the C, so only the module path differs.
 
 ## Same program, same assumptions as E
 
@@ -30,7 +35,7 @@ drops the Wasm backend and its dependencies; the C backend is untouched).
 - **`nat` as machine integers**: `BenchNat.v` maps `nat` to 31-bit
   integers (zero, successor and case analysis realised in C) and
   `Nat.add`, `sub`, `mul`, `pred`, `eqb`, `leb`, `ltb` to C functions: the
-  counterpart of `theories/EncoreExtraction.v`, and the same unproven
+  counterpart of Encore's `ExtrEncore.v` for E, and the same unproven
   assumption. The mapping is applied by an erasure pass MetaRocq only runs
   with `-unsafe-erasure`, which is therefore on: that pass, too, is
   trusted.
