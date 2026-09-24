@@ -39,7 +39,8 @@ value bench_nat_ltb(value a, value b);
 value bench_nat_div(value a, value b);
 value bench_nat_mod(value a, value b);
 value bench_nat_land(value a, value b);
-value bench_lit_3(void), bench_lit_8(void), bench_lit_10(void), bench_lit_16(void),
+value bench_lit_1(void), bench_lit_2(void), bench_lit_3(void), bench_lit_4(void),
+  bench_lit_8(void), bench_lit_10(void), bench_lit_16(void),
   bench_lit_20(void), bench_lit_31(void), bench_lit_32(void), bench_lit_36(void),
   bench_lit_44(void), bench_lit_48(void), bench_lit_56(void), bench_lit_57(void),
   bench_lit_87(void), bench_lit_128(void), bench_lit_129(void), bench_lit_130(void),

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # The Rocq side of the benchmarks without a local opam switch. Run it
-# through docker/rocq.sh; see docker/README.md.
+# through docker/rocq.sh; see "Rocq in Docker" in the README.
 
 # Rocq 9.1 and dune: the image the CI's Rocq job uses. Enough to check the
 # proofs and re-extract the Scheme.

@@ -21,17 +21,21 @@ Building firmware needs `gcc-arm-none-eabi` only. Regenerating the C needs
 CertiRocq: `opam install rocq-certirocq`, or `toolchain.sh` where opam's
 repository is not reachable (it applies `certirocq-no-wasm.patch`, which
 drops the Wasm backend and its dependencies; the C backend is untouched).
-`generate.sh w1_apdu w2_rlp` regenerates only the workloads named.
+`docker/rocq.sh certirocq` does it in Docker, with an image built by
+`toolchain.sh`. `generate.sh w1_apdu w2_rlp` regenerates only the
+workloads named.
 `BenchNat.v` takes `input_byte` from `Encore.Extraction.ExtrEncoreInput`.
 The committed `gen/` of W4 and W6 predates that import (it was generated
 when `input_byte` came from this repository's own `EncoreInput.v`) and was
 kept verbatim: `input_byte` is registered as `bench_input_byte` and no
 other name from that module reaches the C, so only the module path
-differs. W0, W1 and W2 were generated with the current `BenchNat.v`.
+differs. W0, W1, W2 and W3 were generated with the current `BenchNat.v`
+(regenerating W0, W1 and W2 with the toolchain of `toolchain.sh`
+reproduces their committed C byte for byte).
 
 ## Same program, same assumptions as E
 
-- **Same Gallina**: the entry points of `theories/` (W0, W1, W2 and W4
+- **Same Gallina**: the entry points of `theories/` (W0, W1, W2, W3 and W4
   `run`; W6 the encoder and decoder, wrapped in `c_roundtrip`, which
   returns both results because the heap is reset between calls).
 - **`nat` as machine integers**: `BenchNat.v` maps `nat` to 31-bit
