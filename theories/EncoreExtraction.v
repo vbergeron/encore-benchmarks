@@ -7,8 +7,9 @@
 
     Trust assumption (see PLAN.md, "Threats to validity", extraction of
     [nat] to machine integers): [nat] becomes a 24-bit VM integer. This is unproven and wrong
-    past 2^23 - 1; workloads must keep their values under that bound and say
-    so in their README. *)
+    past 2^23 - 1 (since encore 0.1.6 the VM traps with [IntOverflow] there
+    instead of wrapping); workloads must keep their values under that bound
+    and say so in their README. *)
 
 From Stdlib Require Extraction.
 
@@ -27,9 +28,11 @@ Extract Inductive nat => "integer"
   ["0" "(lambda (x) (+ x 1))"]
   "(lambdas (fO fS n) (if (= n 0) (fO 0) (fS (- n 1))))".
 
-(** Arithmetic and comparisons map to VM primitives. The VM has no division
-    and no bitwise operations, so [Nat.div], [Nat.modulo], [Nat.land], ...
-    stay as extracted Gallina (slow, but honest). *)
+(** Arithmetic and comparisons map to VM primitives. [Nat.div],
+    [Nat.modulo], [Nat.land], ... stay as extracted Gallina (slow, but
+    honest): the directives were written when the VM had no division and no
+    bitwise operations. Encore 0.1.6 has them, and its [Encore.Extraction]
+    theory maps them; no workload uses them yet. *)
 Extract Constant Init.Nat.add => "(lambda (n) (lambda (m) (+ n m)))".
 Extract Constant Init.Nat.mul => "(lambda (n) (lambda (m) (* n m)))".
 Extract Constant Init.Nat.sub =>
