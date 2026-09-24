@@ -7,7 +7,7 @@
 ; Proofs and extraction of every workload. `opam install --deps-only .`
 ; installs the pinned Rocq, and rocq-encore (Encore's extraction theory,
 ; Encore.Extraction) from the Encore commit named in
-; encore-benchmarks.opam.template, the same one as Cargo.toml.
+; encore-benchmarks.opam.template: the 0.1.6 release, as in Cargo.toml.
 (package
  (name encore-benchmarks)
  (synopsis "Rocq side of the Encore benchmarks: workload proofs and extraction")

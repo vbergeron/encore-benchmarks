@@ -40,11 +40,3 @@ debug = true   # symbols only; needed by the size breakdown, not flashed
 
 [profile.dev]
 panic = "abort"
-
-# encore 0.1.6 is not on crates.io yet: take it from the release commit.
-# Drop this section (and `cargo update -p encore_vm`) once it is published.
-[patch.crates-io]
-encore_vm = { git = "https://github.com/vbergeron/encore", rev = "d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368" }
-encore_compiler = { git = "https://github.com/vbergeron/encore", rev = "d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368" }
-encore_scheme = { git = "https://github.com/vbergeron/encore", rev = "d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368" }
-encore_derive = { git = "https://github.com/vbergeron/encore", rev = "d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368" }

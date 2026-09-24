@@ -1,5 +1,5 @@
 # rocq-encore is not in the opam repository: take it from the Encore
-# release commit that Cargo.toml's [patch.crates-io] also points to.
+# 0.1.6 release commit, the one published to crates.io as the Rust crates.
 pin-depends: [
   ["rocq-encore.0.1.6" "git+https://github.com/vbergeron/encore.git#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"]
 ]

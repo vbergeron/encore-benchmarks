@@ -221,7 +221,8 @@ checksum = "361a90feb7004eca4019fb28352a9465666b24f840f5c3cddf0ff13920590b89"
 [[package]]
 name = "encore_compiler"
 version = "0.1.6"
-source = "git+https://github.com/vbergeron/encore?rev=d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35c5e2fdf963889f7300339d7deb34b6d6af0380b665f8729ca59e3923b5bb80"
 dependencies = [
  "encore_vm",
 ]
@@ -229,7 +230,8 @@ dependencies = [
 [[package]]
 name = "encore_derive"
 version = "0.1.6"
-source = "git+https://github.com/vbergeron/encore?rev=d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "27ae1292f9324bb1af6c26cffe94ac613ae61910980c96e969050fc40e60ccf0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -239,7 +241,8 @@ dependencies = [
 [[package]]
 name = "encore_scheme"
 version = "0.1.6"
-source = "git+https://github.com/vbergeron/encore?rev=d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "460b47122ae3fcc9a1da0726d37846c971135819828c756b066490dbbff79c24"
 dependencies = [
  "encore_compiler",
  "encore_vm",
@@ -248,7 +251,8 @@ dependencies = [
 [[package]]
 name = "encore_vm"
 version = "0.1.6"
-source = "git+https://github.com/vbergeron/encore?rev=d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d72aa7aad34b22d644a1fa96d894432b6d8cbb661f659ca5cda2a54464161955"
 dependencies = [
  "encore_derive",
 ]
