@@ -1,0 +1,52 @@
+name: Regenerate the C of variant C
+
+# Runs `docker/rocq.sh certirocq` in the published image, so that the C of
+# workloads/*/certirocq/gen/ can be produced without a local toolchain (or
+# network access to the toolchain's hosts). The regenerated gen/ is
+# uploaded as an artifact and, with `commit`, committed to the branch the
+# workflow runs on.
+
+on:
+  workflow_dispatch:
+    inputs:
+      workloads:
+        description: Workloads to regenerate, space-separated (all when empty)
+        required: false
+        default: ""
+      commit:
+        description: Commit the regenerated gen/ to the branch
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  packages: read
+
+jobs:
+  generate:
+    name: Regenerate gen/
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        continue-on-error: true
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Regenerate
+        env:
+          WORKLOADS: ${{ inputs.workloads }}
+        # WORKLOADS is split into arguments on purpose.
+        run: docker/rocq.sh certirocq $WORKLOADS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: certirocq-gen
+          path: workloads/*/certirocq/gen/
+      - name: Commit
+        if: inputs.commit
+        run: |
+          git add workloads/*/certirocq/gen
+          if git diff --cached --quiet; then echo "gen/ unchanged"; exit 0; fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -m "Regenerate the C of variant C (certirocq-generate)"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

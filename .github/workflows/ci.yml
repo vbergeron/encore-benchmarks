@@ -4,16 +4,42 @@ on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   rocq:
     name: Rocq proofs and extraction
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      # Only needed while the GHCR packages are private.
+      - name: Log in to GHCR
+        continue-on-error: true
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
       # In the rocq/rocq-prover:9.1 image, as `docker/rocq.sh` does locally:
       # builds the theories and fails if a promoted .scm is out of date.
       - name: Build theories and check the promoted Scheme
         run: docker/rocq.sh check
+
+  certirocq:
+    name: CertiRocq generated C
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        continue-on-error: true
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      # The C counterpart of the .scm check: regenerates gen/ in the image
+      # published by the certirocq-image workflow (built here if the
+      # toolchain changed and it is not published yet), and fails if a
+      # committed gen/ differs. W4 and W6 are left out while their gen/ is
+      # the one kept verbatim (certirocq/README.md); add them back once
+      # they are regenerated.
+      - name: Regenerate the C and compare with the committed gen/
+        run: docker/rocq.sh certirocq-check w0_smoke w1_apdu w2_rlp w3_policy w5_update w7_store
 
   firmware:
     name: Harness tests and QEMU smoke

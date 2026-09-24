@@ -146,10 +146,34 @@ Without a local opam switch, `docker/rocq.sh` runs the Rocq side in the
 ```bash
 docker/rocq.sh              # check the proofs; fail if a committed .scm is stale
 docker/rocq.sh promote      # same, and write the re-extracted .scm into the tree
-docker/rocq.sh certirocq w3_policy   # regenerate variant C's C (builds CertiRocq once)
+docker/rocq.sh certirocq w3_policy   # regenerate variant C's C
+docker/rocq.sh certirocq-check       # fail if a committed gen/ is stale
 docker/rocq.sh shell        # a shell with Rocq and dune
 ```
 
-`check` is what the CI's Rocq job runs. `certirocq` builds a second image
-with CertiRocq and its dependencies (`certirocq/toolchain.sh`), which takes
-a while the first time. See [`docker/Dockerfile`](docker/Dockerfile).
+`check` is what the CI's Rocq job runs, and `certirocq-check` what its
+CertiRocq job runs. `certirocq` and `certirocq-check` use a second image
+with CertiRocq and its dependencies, built from source by
+`certirocq/toolchain.sh`: slow, and it downloads from about a dozen hosts
+(opam, GitHub, gitlab.inria.fr, ocaml.janestreet.com, ...). So the
+[`certirocq-image`](.github/workflows/certirocq-image.yml) workflow builds
+both images once in GitHub Actions and publishes them as
+`ghcr.io/vbergeron/encore-benchmarks-rocq` and
+`ghcr.io/vbergeron/encore-benchmarks-certirocq`, tagged with
+`docker/image-tag.sh`, a hash of the files that go into them (`latest`
+follows `main`). `docker/rocq.sh` pulls the image of the current hash and
+builds it locally only when none is published, for example while a change
+to the Dockerfile or the toolchain is not pushed yet; `ROCQ_BUILD=1`
+always builds locally. See [`docker/Dockerfile`](docker/Dockerfile).
+
+The packages are meant to be public (they hold only open-source tools),
+so that pulling them needs no credentials. GHCR creates a package
+private: after the first publish, set each one's visibility to public
+once, in its package settings on GitHub. While a package is private,
+pulling it needs `docker login ghcr.io` with a token that has
+`read:packages`. CI logs in with its own token either way.
+
+Without any toolchain at all, the
+[`certirocq-generate`](.github/workflows/certirocq-generate.yml) workflow
+(run by hand, on a branch) regenerates `gen/` in the published image,
+uploads it as an artifact and, with `commit`, commits it to the branch.

@@ -1,0 +1,63 @@
+name: Rocq images
+
+# Builds the images of docker/Dockerfile once, here where the network is
+# open, and publishes them as ghcr.io/vbergeron/encore-benchmarks-<target>,
+# tagged with docker/image-tag.sh (a hash of the files that go into them).
+# docker/rocq.sh pulls the image of the current tag instead of building it,
+# which for certirocq means building the whole toolchain from source and
+# downloading from about a dozen hosts.
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - docker/Dockerfile
+      - docker/entrypoint.sh
+      - docker/image-tag.sh
+      - certirocq/toolchain.sh
+      - certirocq/certirocq-no-wasm.patch
+      - .github/workflows/certirocq-image.yml
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: rocq-images-${{ github.ref }}
+
+jobs:
+  publish:
+    name: Publish ${{ matrix.target }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [rocq, certirocq]
+    env:
+      IMAGE: ghcr.io/vbergeron/encore-benchmarks-${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+      - name: Tag
+        id: tag
+        run: |
+          tag="$(docker/image-tag.sh)"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if docker manifest inspect "$IMAGE:$tag" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$IMAGE:$tag is already published"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Build and push
+        if: steps.tag.outputs.exists != 'true'
+        run: |
+          docker build --target "${{ matrix.target }}" -t "$IMAGE:${{ steps.tag.outputs.tag }}" -f docker/Dockerfile .
+          docker push "$IMAGE:${{ steps.tag.outputs.tag }}"
+      # `latest` follows main; other branches publish their hash tag only.
+      - name: Tag latest
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker buildx imagetools create -t "$IMAGE:latest" "$IMAGE:${{ steps.tag.outputs.tag }}"

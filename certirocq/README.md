@@ -22,6 +22,11 @@ CertiRocq: `opam install rocq-certirocq`, or `toolchain.sh` where opam's
 repository is not reachable (it applies `certirocq-no-wasm.patch`, which
 drops the Wasm backend and its dependencies; the C backend is untouched).
 `generate.sh w1_apdu w2_rlp` regenerates only the workloads named.
+Without a local toolchain, `docker/rocq.sh certirocq [w ...]` runs it in
+the image the `certirocq-image` workflow publishes on GHCR, and CI runs
+`docker/rocq.sh certirocq-check`, which fails if a committed `gen/`
+differs from what CertiRocq produces (see the main README, Rocq in
+Docker).
 `BenchNat.v` takes `input_byte` from `Encore.Extraction.ExtrEncoreInput`.
 The committed `gen/` of W4 and W6 predates that import (it was generated
 when `input_byte` came from this repository's own `EncoreInput.v`) and was
@@ -31,6 +36,8 @@ differs. W0, W1, W2, W3, W5 and W7 were generated with the current
 `BenchNat.v`. W4 and W6 were not regenerated for its `tail_add` and
 `tail_mul` either: they have no literal that needs them (below), and
 adding a registration only renumbers the identifiers of the generated C.
+CI's `certirocq-check` leaves W4 and W6 out for that reason; once they
+are regenerated, add them back to its list in `.github/workflows/ci.yml`.
 
 ## Same program, same assumptions as E
 
