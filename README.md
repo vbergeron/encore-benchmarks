@@ -36,7 +36,8 @@ time.
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | W3 (BIP32 path policy and allow-list), variants E and R | done, runs on both QEMU boards |
 | W7 (FIDO credential store, persistent red-black tree), variants E and R | done, runs on both QEMU boards |
-| Workloads W5, W8 | not started |
+| W5 (A/B firmware update with anti-rollback), variants E and R | done, runs on both QEMU boards |
+| Workload W8 | not started |
 
 ## Layout
 

@@ -31,7 +31,7 @@ jobs:
         run: cargo test
       - name: Workloads on QEMU (Cortex-M3 and Cortex-M33)
         run: |
-          for w in w0_smoke w1_apdu w2_rlp w3_policy w4_pin w6_cobs w7_store; do
+          for w in w0_smoke w1_apdu w2_rlp w3_policy w4_pin w5_update w6_cobs w7_store; do
             for board in qemu-lm3s6965 qemu-an505; do
               for v in r e; do
                 cargo xtask run -w "$w" -v "$v" -b "$board" --out ci.jsonl
