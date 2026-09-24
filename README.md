@@ -35,7 +35,8 @@ time.
 | W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | W3 (BIP32 path policy and allow-list), variants E and R | done, runs on both QEMU boards |
-| Workloads W5, W7, W8 | not started (W7 next, per [the plan](PLAN.md#priorities-and-steps)) |
+| W7 (FIDO credential store, persistent red-black tree), variants E and R | done, runs on both QEMU boards |
+| Workloads W5, W8 | not started |
 
 ## Layout
 
