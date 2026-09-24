@@ -124,10 +124,11 @@ value bench_nat_mod(value a, value b) {
 value bench_nat_land(value a, value b) { return a & b; } /* the tag bits stay 1 */
 
 /* Integer literals for the named constants of the workloads (Apdu.v,
-   Rlp.v, Pin.v, Cobs.v): the counterpart of their Extract Constant
-   directives for Encore. Otherwise a literal such as 164 would be 164
-   calls to bench_nat_succ. */
+   Rlp.v, Policy.v, Pin.v, Update.v, Cobs.v, Store.v): the counterpart of
+   their Extract Constant directives for Encore. Otherwise a literal such
+   as 164 would be 164 calls to bench_nat_succ. */
 #define LIT(n) value bench_lit_##n(void) { return Val_long(n); }
-LIT(3) LIT(8) LIT(10) LIT(16) LIT(20) LIT(31) LIT(32) LIT(36) LIT(44) LIT(48)
-LIT(56) LIT(57) LIT(87) LIT(128) LIT(129) LIT(130) LIT(164) LIT(183)
-LIT(184) LIT(192) LIT(247) LIT(248) LIT(254) LIT(256)
+LIT(1) LIT(2) LIT(3) LIT(4) LIT(5) LIT(6) LIT(8) LIT(10) LIT(16) LIT(20)
+LIT(31) LIT(32) LIT(36) LIT(44) LIT(48) LIT(56) LIT(57) LIT(87) LIT(128)
+LIT(129) LIT(130) LIT(164) LIT(183) LIT(184) LIT(192) LIT(247) LIT(248)
+LIT(254) LIT(256) LIT(65521)
