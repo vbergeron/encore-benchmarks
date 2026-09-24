@@ -649,6 +649,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "w3_policy-c"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
 name = "w3_policy-e"
 version = "0.1.0"
 dependencies = [
@@ -706,6 +717,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "w5_update-c"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
 name = "w5_update-e"
 version = "0.1.0"
 dependencies = [
@@ -753,6 +775,17 @@ dependencies = [
 
 [[package]]
 name = "w6_cobs-r"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
+name = "w7_store-c"
 version = "0.1.0"
 dependencies = [
  "bench_build",

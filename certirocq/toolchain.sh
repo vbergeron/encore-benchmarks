@@ -18,7 +18,9 @@
 #     C variant uses, is untouched.
 #
 # CompCert is configured for arm-eabi, so that CertiRocq generates C for
-# 32-bit words (it reads Archi.ptr64).
+# 32-bit words (it reads Archi.ptr64), and with -ignore-coq-version: its
+# configure accepts Rocq up to 9.1 but not 9.1.1, which rocq-prover:9.1
+# now ships.
 set -euxo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 work="${1:-$PWD/certirocq-toolchain}"
@@ -43,7 +45,7 @@ clone MetaRocq/metarocq metarocq v1.5.1-9.1
 clone AbsInt/CompCert compcert v3.17
 (cd compcert \
   && { grep -rlP "\bZmod\b(?![_'])" --include=*.v . || true; } | xargs -r perl -pi -e "s/\bZmod\b(?![_'])/Z.modulo/g" \
-  && ./configure -clightgen arm-eabi && make depend && make -j"$(nproc)" proof \
+  && ./configure -ignore-coq-version -clightgen arm-eabi && make depend && make -j"$(nproc)" proof \
   && for d in lib common arm backend cfrontend driver cparser export; do \
        install -d "$coqlib/user-contrib/compcert/$d"; \
        install -m 0644 "$d"/*.v "$d"/*.vo "$d"/*.glob "$coqlib/user-contrib/compcert/$d/"; \

@@ -67,7 +67,13 @@ command.
   event keeps a continuation until the answers are consed on the way back,
   so the live heap grows with N; `cargo xtask minheap` finds 28 KiB for the
   whole case list (N = 1000).
-- **C** (CertiRocq): not done yet.
+  C: 20 KiB arena, 2^10-word nursery.
+- **C** (CertiRocq, `certirocq/`): the direct-style C recurses once per
+  event (`process` is not tail-recursive), and 1000 events exhaust the C
+  stack (the runtime's stack guard aborts the run). C therefore runs only
+  N = 10 and 100 (`CASES` in `certirocq/src/main.rs`), and has no row for
+  N = 1000. `modulus` (65521) needs `Nat.tail_add` and `tail_mul` in
+  `certirocq/theories/BenchNat.v`: see there.
 
 Not modelled: the flash itself (a slot is its trailer, the number of
 chunks and a running digest, not its bytes), a real digest or signature

@@ -53,6 +53,10 @@ reason from the rule that came closest.
 - **Heap**: 32 KiB by default (E), as the other workloads. The heap peak
   reaches the whole heap only because the collector runs when it is full:
   `cargo xtask minheap` finds 1 KiB for the whole case list.
+  C: 20 KiB arena, 2^10-word nursery.
+- **C** (CertiRocq, `certirocq/`): with 64 rules the run exhausts the
+  20 KiB arena (the runtime aborts). C therefore runs only N = 1, 4 and 16
+  (`CASES` in `certirocq/src/main.rs`), and has no row for N = 64.
 
 Not modelled: the key derivation itself and the signature (they stay in
 the Rust layer, which derives the key of the path the Gallina accepted),

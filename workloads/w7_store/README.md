@@ -53,7 +53,11 @@ real use and a scale-up to 500 entries.
   bytes, so 500 credentials are 11.7 KiB live; `cargo xtask minheap` finds
   12.75 KiB for the whole case list. The heap peak reaches the whole heap
   from N = 50 up only because the collector runs when it is full.
-- **C** (CertiRocq): not done yet.
+  C: 20 KiB arena, 2^10-word nursery.
+- **C** (CertiRocq, `certirocq/`): a store of 100 or 500 credentials
+  exhausts the 20 KiB arena (the runtime aborts). C therefore runs only
+  N = 10 and 50 (`CASES` in `certirocq/src/main.rs`), and has no rows for
+  N = 100 and 500.
 
 Not modelled: deletion (a red-black delete is the other half of a real
 store, and a much longer proof), the credential itself (key pair, user and

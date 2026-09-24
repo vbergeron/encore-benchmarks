@@ -11,6 +11,13 @@
       [modulo] and [land] become C functions on those integers instead of
       recursive Gallina.
     - [input_byte] (ExtrEncoreInput.v) reads the host's input buffer.
+    - [Nat.tail_add] and [tail_mul] become the same C functions as [add]
+      and [mul] (Stdlib proves them equal: [Nat.tail_add_spec],
+      [Nat.tail_mul_spec]). No workload calls them, but Rocq writes a
+      literal of 5000 or more as [Nat.of_num_uint] of its decimal digits,
+      which computes with them. CertiRocq still evaluates the body of a
+      registered constant at start-up (W5's [modulus := 65521]), and as
+      unary recursion that exhausts the C stack.
 
     ExtrEncore maps more [Nat] operations than this file (min, max, lor,
     shifts, ...). No workload uses them yet; one that does must register
@@ -40,6 +47,8 @@ CertiRocq Register [
   Corelib.Init.Nat.add => "bench_nat_add",
   Corelib.Init.Nat.sub => "bench_nat_sub",
   Corelib.Init.Nat.mul => "bench_nat_mul",
+  Corelib.Init.Nat.tail_add => "bench_nat_add",
+  Corelib.Init.Nat.tail_mul => "bench_nat_mul",
   Corelib.Init.Nat.eqb => "bench_nat_eqb",
   Corelib.Init.Nat.leb => "bench_nat_leb",
   Corelib.Init.Nat.ltb => "bench_nat_ltb",
