@@ -1,0 +1,5 @@
+# The images need only these; the checkout is mounted at run time.
+*
+!docker/
+!certirocq/toolchain.sh
+!certirocq/certirocq-no-wasm.patch
