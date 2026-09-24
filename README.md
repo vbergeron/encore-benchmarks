@@ -31,12 +31,12 @@ time.
 | W0 smoke workload, variants E, R and C | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | `encore_vm` exposes them since 0.1.5 (`stats` feature, `GcStats`); not yet recorded by the workloads |
-| Variant C (CertiRocq), W0, W1, W2, W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
+| Variant C (CertiRocq), W0 to W7 | done, run on both QEMU boards (the cases that fit the RAM budget); see `certirocq/` |
 | W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
-| W3 (BIP32 path policy and allow-list), variants E and R | done, runs on both QEMU boards |
-| W7 (FIDO credential store, persistent red-black tree), variants E and R | done, runs on both QEMU boards |
-| W5 (A/B firmware update with anti-rollback), variants E and R | done, runs on both QEMU boards |
+| W3 (BIP32 path policy and allow-list), variants E, R and C | done, runs on both QEMU boards |
+| W7 (FIDO credential store, persistent red-black tree), variants E, R and C | done, runs on both QEMU boards |
+| W5 (A/B firmware update with anti-rollback), variants E, R and C | done, runs on both QEMU boards |
 | Workload W8 | not started |
 
 ## Layout
