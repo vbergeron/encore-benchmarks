@@ -1,0 +1,21 @@
+[package]
+name = "w8_crc-r"
+description = "W8 CRC, variant R: idiomatic Rust no_std (the oracle)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "w8_crc-r"
+test = false
+bench = false
+
+[dependencies]
+bench_harness = { workspace = true }
+cortex-m = { workspace = true }
+cortex-m-rt = { workspace = true }
+panic-halt = { workspace = true }
+
+[build-dependencies]
+bench_build = { workspace = true }

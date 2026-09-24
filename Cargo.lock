@@ -819,6 +819,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "w8_crc-e"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "encore_vm",
+ "panic-halt",
+]
+
+[[package]]
+name = "w8_crc-r"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
 name = "windows-link"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"

@@ -37,7 +37,7 @@ time.
 | W3 (BIP32 path policy and allow-list), variants E, R and C | done, runs on both QEMU boards |
 | W7 (FIDO credential store, persistent red-black tree), variants E, R and C | done, runs on both QEMU boards |
 | W5 (A/B firmware update with anti-rollback), variants E, R and C | done, runs on both QEMU boards |
-| Workload W8 | not started |
+| W8 (CRC-16/MODBUS and CRC-32 in Gallina), variants E and R | done, runs on both QEMU boards; C not built yet (see `workloads/w8_crc/README.md`) |
 
 ## Layout
 

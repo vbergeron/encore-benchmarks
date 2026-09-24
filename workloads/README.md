@@ -15,7 +15,7 @@ smoke test for the pipeline; W1–W8 are the study, as chosen in
 | W5 | A/B firmware update, anti-rollback | version never decreases; a valid slot always exists | 10 → 1000 events, 4–5 power cuts per 40 | E, R, C |
 | W6 | COBS stream framing | round trip; no zero in the output | frame 16 → 1024 B | E, R, C |
 | W7 | FIDO credential store (persistent RB tree) | balance invariants; `lookup` after `insert` | 10 → 500 entries | E, R, C |
-| W8 | CRC-16 / CRC-32 in Gallina | equals the polynomial definition | block size | — |
+| W8 | CRC-16 / CRC-32 in Gallina | equals the polynomial definition | block 16 → 1024 B | E, R |
 
 Order, per [the plan](../PLAN.md#priorities-and-steps): W4 then W1 (in all three variants), then W2 and W7,
 then W3, W5, W6, W8.

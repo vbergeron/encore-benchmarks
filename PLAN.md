@@ -13,6 +13,9 @@ what the study commits to. What has been built so far is in the
   R's, since the checks run at build time. See the [README](README.md).
   The plan's text below still mentions R+V; it is kept as written.
 - **W6 uses COBS**, one of the two codecs the plan allowed (COBS or HDLC).
+- **W8 uses the VM's bitwise instructions.** Encore gained them after the
+  plan was written, so W8 no longer tests their absence; see
+  [its README](workloads/w8_crc/README.md).
 - **The runner is `cargo xtask`** (`xtask/`). It takes over what the plan
   describes with `scripts/benchmark.sh`, the QEMU instruction-count script
   of the [Encore repository](https://github.com/vbergeron/encore).
