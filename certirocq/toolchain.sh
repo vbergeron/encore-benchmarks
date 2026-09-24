@@ -42,8 +42,8 @@ clone MetaRocq/metarocq metarocq v1.5.1-9.1
 
 clone AbsInt/CompCert compcert v3.17
 (cd compcert \
-  && grep -rlP "\bZmod\b(?![_'])" --include=*.v . | xargs -r perl -pi -e "s/\bZmod\b(?![_'])/Z.modulo/g" \
-  && ./configure -clightgen arm-eabi && make -j"$(nproc)" proof \
+  && { grep -rlP "\bZmod\b(?![_'])" --include=*.v . || true; } | xargs -r perl -pi -e "s/\bZmod\b(?![_'])/Z.modulo/g" \
+  && ./configure -clightgen arm-eabi && make depend && make -j"$(nproc)" proof \
   && for d in lib common arm backend cfrontend driver cparser export; do \
        install -d "$coqlib/user-contrib/compcert/$d"; \
        install -m 0644 "$d"/*.v "$d"/*.vo "$d"/*.glob "$coqlib/user-contrib/compcert/$d/"; \

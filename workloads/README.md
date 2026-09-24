@@ -7,9 +7,9 @@ smoke test for the pipeline; W1–W8 are the study, as chosen in
 
 | # | Workload | Property proved | N | Status |
 |---|---|---|---|---|
-| W0 | Smoke: sum of `[1..N]` | closed form `2·run n = n(n+1)` | list length | E, R |
-| W1 | APDU + BER-TLV parser (ISO 7816) | totality, no out-of-bounds, `encode (decode x) = x` | APDU 5 → 261 B, TLV depth | — |
-| W2 | Transaction decoder (RLP / Bitcoin) | what is displayed is what is signed | fields, calldata size | — |
+| W0 | Smoke: sum of `[1..N]` | closed form `2·run n = n(n+1)` | list length | E, R, C |
+| W1 | APDU + BER-TLV parser (ISO 7816) | totality, no out-of-bounds, `encode (decode x) = x` | APDU 5 → 261 B, TLV depth | E, R, C |
+| W2 | Transaction decoder (Ethereum RLP) | what is displayed is what is signed | calldata 0 → 260 B | E, R, C |
 | W3 | BIP32 path policy and allow-list | only compliant paths and amounts are signed | rules, path depth | — |
 | W4 | PIN state machine (ISO 7816 VERIFY) | counter never goes up without a successful verify | trace length | E, R, C |
 | W5 | A/B firmware update, anti-rollback | version never decreases; a valid slot always exists | steps, injected power cuts | — |

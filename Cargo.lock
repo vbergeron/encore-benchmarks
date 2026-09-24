@@ -547,6 +547,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "w0_smoke-c"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
 name = "w0_smoke-e"
 version = "0.1.0"
 dependencies = [
@@ -560,6 +571,74 @@ dependencies = [
 
 [[package]]
 name = "w0_smoke-r"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
+name = "w1_apdu-c"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
+name = "w1_apdu-e"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "encore_vm",
+ "panic-halt",
+]
+
+[[package]]
+name = "w1_apdu-r"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
+name = "w2_rlp-c"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "panic-halt",
+]
+
+[[package]]
+name = "w2_rlp-e"
+version = "0.1.0"
+dependencies = [
+ "bench_build",
+ "bench_harness",
+ "cortex-m",
+ "cortex-m-rt",
+ "encore_vm",
+ "panic-halt",
+]
+
+[[package]]
+name = "w2_rlp-r"
 version = "0.1.0"
 dependencies = [
  "bench_build",

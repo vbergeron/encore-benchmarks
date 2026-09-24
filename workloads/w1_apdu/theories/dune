@@ -1,0 +1,18 @@
+(rocq.theory
+ (name EncoreBench.W1)
+ (modules Apdu)
+ (theories Stdlib Encore.Extraction))
+
+; Extraction is a separate rule because dune's rocq.extraction stanza only
+; knows OCaml. The .scm is promoted into the source tree and committed, so
+; firmware builds do not need Rocq; `dune build` keeps it in sync.
+(rule
+ (targets w1_apdu.scm)
+ (mode promote)
+ (deps
+  Apdu.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncore.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncoreInput.vo)
+ (action
+  (run rocq compile -w -extraction-default-directory -Q %{project_root}/vendor/encore-extraction Encore.Extraction -Q . EncoreBench.W1
+   %{dep:Extract.v})))

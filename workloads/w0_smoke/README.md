@@ -16,6 +16,11 @@ check) and is the template for W1–W8.
   on the lm3s6965 with the CPS optimizer, and N = 1000 does not fit with
   `--cps-optimize off`.
 
+**C** (CertiRocq, `certirocq/`): 20 KiB arena, 2^10-word nursery. The
+direct-style C recurses once per element in `range_from` and `sum`, so
+N = 1000 exhausts the C stack; C runs N = 1, 10 and 100 (`CASES` in
+`certirocq/src/main.rs`).
+
 The R variant is `(1..=n).sum()`, which LLVM folds into a closed form: the
 instruction count does not depend on N. That is a fair result for
 idiomatic Rust, and a reminder that W0 measures nothing about the study.

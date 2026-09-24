@@ -28,12 +28,13 @@ time.
 | Runner (`xtask`, run as `cargo xtask`) | done: QEMU instruction counts per region, sizes, oracle check, min-heap search |
 | Rocq with dune (`theories/`, `workloads/*/theories`) | done: shared extraction setup, extraction promoted to `.scm` |
 | QEMU boards (M3 and M33) | done |
-| W0 smoke workload, variants E and R | done, runs on both QEMU boards |
+| W0 smoke workload, variants E, R and C | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | `encore_vm` exposes them since 0.1.5 (`stats` feature, `GcStats`); not yet recorded by the workloads |
-| Variant C (CertiRocq), W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
+| Variant C (CertiRocq), W0, W1, W2, W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
+| W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
-| Workloads W1–W3, W5, W7, W8 | not started (W1 next, per [the plan](PLAN.md#priorities-and-steps)) |
+| Workloads W3, W5, W7, W8 | not started (W7 next, per [the plan](PLAN.md#priorities-and-steps)) |
 
 ## Layout
 
