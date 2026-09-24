@@ -42,6 +42,7 @@ PLAN.md              the experiment plan: questions, metrics, workloads, boards
 boards/              one TOML per board: target, memory origins, runner
 crates/bench_harness no_std, on the device: regions, cycles, stack, records
 crates/bench_build   build.rs helper: memory.x from budget, bench_config.rs, bytecode
+vendor/              Encore's Rocq extraction theory (Encore.Extraction), verbatim
 workloads/<w>/       one directory per workload, see workloads/README.md
 certirocq/           C variant: CertiRocq nat mapping, runtime, generation scripts
 xtask/               host runner (`cargo xtask`): build, run, record, check
@@ -113,8 +114,8 @@ when counting instructions or cycles.
 
 The Rocq side builds with dune (`dune-project` at the root, `rocq.theory`
 stanzas). The extraction directives come from Encore itself: the
-`rocq-encore` package (theory `Encore.Extraction`, pinned to the same
-Encore commit as the Rust crates, see `encore-benchmarks.opam.template`).
+theory `Encore.Extraction` from Encore's `rocq/`, copied verbatim into
+`vendor/encore-extraction/` at the same release as the Rust crates.
 `ExtrEncore.v` makes `nat` a 24-bit VM integer (an operation that leaves
 that range traps with `IntOverflow`), maps `Nat.add`, `sub`, `mul`,
 `pred`, `min`, `max`, the comparisons, `div`, `modulo` and the bitwise

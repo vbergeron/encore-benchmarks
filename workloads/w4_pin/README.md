@@ -24,7 +24,7 @@ instruction".
   cycle that goes through every transition (`vectors/vectors.rs`), about
   6.5 bytes per APDU.
 - **Input**: the stream is in flash and read byte by byte through the
-  `input_byte` extern (`ExtrEncoreInput.v` of rocq-encore); the E run includes that
+  `input_byte` extern (`vendor/encore-extraction/ExtrEncoreInput.v`); the E run includes that
   FFI cost, the R run reads the same bytes from a slice.
 - **Trust**: `nat` as VM integers (`ExtrEncore.v`); `input_byte`
   realised by the host (`ExtrEncoreInput.v`); the constants of `Pin.v` (INS

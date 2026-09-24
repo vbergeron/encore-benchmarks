@@ -14,7 +14,7 @@ encodes a frame, then decodes the encoding.
   with about one zero in 16, plus a 300-byte zero-free run at offset 600 so
   that the 1024-byte frame exercises the 254-byte block limit (code 0xFF).
 - **Input**: the frame is in flash and read byte by byte through the
-  `input_byte` extern (`ExtrEncoreInput.v` of rocq-encore). The E output is the
+  `input_byte` extern (`vendor/encore-extraction/ExtrEncoreInput.v`). The E output is the
   encoded list and the decoded list, hashed in that order, as in R.
 - **Trust**: `nat` as VM integers; `input_byte` returns bytes; the proof
   holds for any `nat` values, so it does not need the bytes to be < 256.

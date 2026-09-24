@@ -9,7 +9,10 @@
 (rule
  (targets w4_pin.scm)
  (mode promote)
- (deps Pin.vo)
+ (deps
+  Pin.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncore.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncoreInput.vo)
  (action
-  (run rocq compile -w -extraction-default-directory -Q . EncoreBench.W4
+  (run rocq compile -w -extraction-default-directory -Q %{project_root}/vendor/encore-extraction Encore.Extraction -Q . EncoreBench.W4
    %{dep:Extract.v})))

@@ -1,7 +1,7 @@
 (** CertiRocq setup shared by the C variant of every workload: the
     counterpart of Encore.Extraction.ExtrEncore and ExtrEncoreInput
-    (rocq-encore) for Encore, so that C and E run the same Gallina under
-    the same trust assumptions.
+    (vendor/encore-extraction) for Encore, so that C and E run the same
+    Gallina under the same trust assumptions.
 
     - [nat] becomes a machine integer (31 bits), through three axioms
       realised in C by certirocq/runtime/bench_rt.c: zero, successor and

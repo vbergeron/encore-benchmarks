@@ -9,7 +9,10 @@
 (rule
  (targets w6_cobs.scm)
  (mode promote)
- (deps Cobs.vo)
+ (deps
+  Cobs.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncore.vo
+  %{project_root}/vendor/encore-extraction/ExtrEncoreInput.vo)
  (action
-  (run rocq compile -w -extraction-default-directory -Q . EncoreBench.W6
+  (run rocq compile -w -extraction-default-directory -Q %{project_root}/vendor/encore-extraction Encore.Extraction -Q . EncoreBench.W6
    %{dep:Extract.v})))
