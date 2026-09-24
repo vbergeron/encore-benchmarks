@@ -19,50 +19,16 @@ jobs:
         shell: bash
     steps:
       - uses: actions/checkout@v4
-      # rocq-encore (Encore.Extraction) is the only thing installed on top of
-      # the image. Its compiled theory is cached, keyed on the image's Rocq
-      # and Stdlib versions (.vo files are only valid for those) and on the
-      # pinned Encore commit, so a cache hit skips opam altogether.
-      - name: Key for the rocq-encore cache
-        id: rocq-encore-key
+      - name: Build theories and re-extract
         run: |
           user="$(getent passwd 1000 | cut -d: -f1)"
-          echo "user=${user:?no uid 1000 user in the image}" >> "$GITHUB_OUTPUT"
-          versions="$(su "$user" -s /bin/bash -c 'eval "$(opam env)" && rocq --version && opam show -f version rocq-stdlib')"
-          echo "$versions"
-          echo "key=rocq-encore-$(echo "$versions" | sha256sum | cut -c1-16)-${{ hashFiles('encore-benchmarks.opam.template') }}" >> "$GITHUB_OUTPUT"
-      - name: Restore rocq-encore
-        id: rocq-encore-cache
-        uses: actions/cache@v4
-        with:
-          path: .ci-cache/rocq-encore
-          key: ${{ steps.rocq-encore-key.outputs.key }}
-      - name: Build theories and re-extract
-        env:
-          ROCQ_USER: ${{ steps.rocq-encore-key.outputs.user }}
-          CACHE_HIT: ${{ steps.rocq-encore-cache.outputs.cache-hit }}
-        run: |
-          echo "building as $ROCQ_USER"
-          chown -R "$ROCQ_USER" "$GITHUB_WORKSPACE"
-          # On a miss, --deps-only installs rocq-encore from the pin-depends
-          # of encore-benchmarks.opam (Rocq and Stdlib are already in the
-          # image), and the installed theory is saved for the cache. The
-          # image pins rocq-stdlib 9.0.0, which works with Rocq 9.1 but fails
-          # the ">= 9.1" bound of both opam files: keep the image's.
-          su "$ROCQ_USER" -s /bin/bash -c '
-            set -euo pipefail
-            cd "$GITHUB_WORKSPACE"
-            eval "$(opam env)"
-            contrib="$(rocq c -where)/user-contrib"
-            if [ "$CACHE_HIT" = true ]; then
-              cp -r .ci-cache/rocq-encore/Encore "$contrib/"
-            else
-              opam install -y --deps-only --ignore-constraints-on=rocq-stdlib .
-              mkdir -p .ci-cache/rocq-encore
-              cp -r "$contrib/Encore" .ci-cache/rocq-encore/
-            fi
-            rocq --version
-            dune build'
+          echo "building as ${user:?no uid 1000 user in the image}"
+          chown -R "$user" "$GITHUB_WORKSPACE"
+          # --deps-only installs rocq-encore from the pin-depends of
+          # encore-benchmarks.opam; Rocq and Stdlib are already in the image.
+          # The image pins rocq-stdlib 9.0.0, which works with Rocq 9.1 but
+          # fails the ">= 9.1" bound of both opam files: keep the image's.
+          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && opam install -y --deps-only --ignore-constraints-on=rocq-stdlib . && rocq --version && dune build"
       - name: Promoted Scheme is up to date
         run: git -c safe.directory='*' diff --exit-code -- 'workloads/*/theories/*.scm'
 
