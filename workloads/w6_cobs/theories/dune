@@ -1,7 +1,7 @@
 (rocq.theory
  (name EncoreBench.W6)
  (modules Cobs)
- (theories Stdlib EncoreBench.Common))
+ (theories Stdlib Encore.Extraction))
 
 ; Extraction is a separate rule because dune's rocq.extraction stanza only
 ; knows OCaml. The .scm is promoted into the source tree and committed, so
@@ -9,10 +9,7 @@
 (rule
  (targets w6_cobs.scm)
  (mode promote)
- (deps
-  Cobs.vo
-  %{project_root}/theories/EncoreExtraction.vo
-  %{project_root}/theories/EncoreInput.vo)
+ (deps Cobs.vo)
  (action
-  (run rocq compile -w -extraction-default-directory -Q %{project_root}/theories EncoreBench.Common -Q . EncoreBench.W6
+  (run rocq compile -w -extraction-default-directory -Q . EncoreBench.W6
    %{dep:Extract.v})))

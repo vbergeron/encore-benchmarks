@@ -13,7 +13,7 @@
 
 From Stdlib Require Import Arith List Lia.
 Import ListNotations.
-From EncoreBench.Common Require Import EncoreInput.
+From Encore.Extraction Require Import ExtrEncoreInput.
 
 (** Largest number of data bytes in one block. Extracted to an integer
     literal by [Extract.v]. *)

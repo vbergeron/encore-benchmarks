@@ -21,7 +21,7 @@ int bench_rt_last_error(void);
 /* Bytes of the arena in use (high-water mark since the last reset). */
 unsigned bench_rt_arena_peak(void);
 
-/* Input buffer read by the input_byte axiom (EncoreInput.v). */
+/* Input buffer read by the input_byte axiom (ExtrEncoreInput.v, rocq-encore). */
 void bench_rt_set_input(const unsigned char *data, unsigned len);
 
 /* The C realisations named by certirocq/theories/BenchNat.v. */

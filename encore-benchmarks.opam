@@ -6,6 +6,7 @@ depends: [
   "dune" {>= "3.21" & >= "3.21"}
   "rocq-core" {>= "9.1" & < "9.2"}
   "rocq-stdlib" {>= "9.1" & < "9.2"}
+  "rocq-encore" {= "0.1.6"}
   "odoc" {with-doc}
 ]
 build: [
@@ -23,3 +24,8 @@ build: [
   ]
 ]
 x-maintenance-intent: ["(latest)"]
+# rocq-encore is not in the opam repository: take it from the Encore
+# release commit that Cargo.toml's [patch.crates-io] also points to.
+pin-depends: [
+  ["rocq-encore.0.1.6" "git+https://github.com/vbergeron/encore.git#d8e32a19a2a6c31e7536f46aa5aa532c7e8cf368"]
+]

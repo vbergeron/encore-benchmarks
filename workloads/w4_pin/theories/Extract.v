@@ -1,4 +1,4 @@
-From EncoreBench.Common Require Import EncoreExtraction EncoreInput.
+From Encore.Extraction Require Import ExtrEncore ExtrEncoreInput.
 From EncoreBench.W4 Require Import Pin.
 
 (** Named constants become VM integer literals (see Pin.v). *)

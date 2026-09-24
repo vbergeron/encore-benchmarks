@@ -1,4 +1,4 @@
-From EncoreBench.Common Require Import EncoreExtraction EncoreInput.
+From Encore.Extraction Require Import ExtrEncore ExtrEncoreInput.
 From EncoreBench.W6 Require Import Cobs.
 
 (** Named constant becomes a VM integer literal (see Cobs.v). *)

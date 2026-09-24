@@ -24,10 +24,10 @@ instruction".
   cycle that goes through every transition (`vectors/vectors.rs`), about
   6.5 bytes per APDU.
 - **Input**: the stream is in flash and read byte by byte through the
-  `input_byte` extern (`theories/EncoreInput.v`); the E run includes that
+  `input_byte` extern (`ExtrEncoreInput.v` of rocq-encore); the E run includes that
   FFI cost, the R run reads the same bytes from a slice.
-- **Trust**: `nat` as VM integers (`EncoreExtraction.v`); `input_byte`
-  realised by the host (`EncoreInput.v`); the constants of `Pin.v` (INS
+- **Trust**: `nat` as VM integers (`ExtrEncore.v`); `input_byte`
+  realised by the host (`ExtrEncoreInput.v`); the constants of `Pin.v` (INS
   bytes, counter maxima) extracted to literals in `Extract.v`.
 - **Heap**: 32 KiB by default (E). C: 20 KiB arena, 2^10-word nursery.
 - **C** (CertiRocq, `certirocq/`): the direct-style C recurses once per

@@ -11,7 +11,7 @@ check) and is the template for W1–W8.
 - **N**: 1, 10, 100, 1000. The result must stay below 2^23 (Encore
   integers), so N ≤ 4095; past that the VM traps with `IntOverflow`
   (encore ≥ 0.1.6) instead of returning a wrapped sum.
-- **Trust**: `nat` is extracted to VM integers (`EncoreExtraction.v`).
+- **Trust**: `nat` is extracted to VM integers (`ExtrEncore.v` of rocq-encore).
 - **Heap**: 32 KiB by default; `cargo xtask minheap` finds 31.5 KiB for N = 1000
   on the lm3s6965 with the CPS optimizer, and N = 1000 does not fit with
   `--cps-optimize off`.

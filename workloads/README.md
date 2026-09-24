@@ -31,7 +31,7 @@ workloads/<w>/
   theories/
     dune                rocq.theory EncoreBench.<W> + extraction rule (promote)
     <Spec>.v            program, specification, proofs
-    Extract.v           imports EncoreBench.Common.EncoreExtraction, extracts the entry points
+    Extract.v           imports Encore.Extraction.ExtrEncore, extracts the entry points
     <w>.scm             promoted by `dune build`, committed
   vectors/vectors.rs    frozen inputs, `include!`d by every variant
   rust/                 R   — package `<w>-r`  (oracle)

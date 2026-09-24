@@ -54,7 +54,7 @@ pub unsafe fn field(v: Value, i: usize) -> Value {
     unsafe { *(v as *const Value).add(i) }
 }
 
-/// The input buffer that `input_byte` (theories/EncoreInput.v) reads.
+/// The input buffer that `input_byte` (Encore.Extraction.ExtrEncoreInput) reads.
 pub fn set_input(data: &'static [u8]) {
     unsafe { bench_rt_set_input(data.as_ptr(), data.len() as u32) }
 }

@@ -1,7 +1,7 @@
 (** CertiRocq setup shared by the C variant of every workload: the
-    counterpart of theories/EncoreExtraction.v and EncoreInput.v for
-    Encore, so that C and E run the same Gallina under the same trust
-    assumptions.
+    counterpart of Encore.Extraction.ExtrEncore and ExtrEncoreInput
+    (rocq-encore) for Encore, so that C and E run the same Gallina under
+    the same trust assumptions.
 
     - [nat] becomes a machine integer (31 bits), through three axioms
       realised in C by certirocq/runtime/bench_rt.c: zero, successor and
@@ -9,7 +9,11 @@
       2^30 - 1.
     - [Nat.add], [sub], [mul], [pred], [eqb], [leb], [ltb] become C
       functions on those integers instead of recursive Gallina.
-    - [input_byte] (EncoreInput.v) reads the host's input buffer.
+    - [input_byte] (ExtrEncoreInput.v) reads the host's input buffer.
+
+    ExtrEncore maps more [Nat] operations than this file (min, max, div,
+    modulo, bitwise, ...). No workload uses them yet; one that does must
+    register them here too, or C would run them as recursive Gallina.
 
     The nat mapping is applied by an erasure pass that MetaRocq only runs
     with [-unsafe-erasure] (it is not verified), so every CompileC.v
@@ -18,7 +22,7 @@
     chain of up to 255 heap cells. *)
 
 From CertiRocq.Plugin Require Import CertiRocq.
-From EncoreBench.Common Require Import EncoreInput.
+From Encore.Extraction Require Import ExtrEncoreInput.
 
 Axiom nat_zero : nat.
 Axiom nat_succ : nat -> nat.

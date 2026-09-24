@@ -42,7 +42,6 @@ PLAN.md              the experiment plan: questions, metrics, workloads, boards
 boards/              one TOML per board: target, memory origins, runner
 crates/bench_harness no_std, on the device: regions, cycles, stack, records
 crates/bench_build   build.rs helper: memory.x from budget, bench_config.rs, bytecode
-theories/            Rocq, shared: EncoreExtraction.v (nat → VM integers, ...)
 workloads/<w>/       one directory per workload, see workloads/README.md
 certirocq/           C variant: CertiRocq nat mapping, runtime, generation scripts
 xtask/               host runner (`cargo xtask`): build, run, record, check
@@ -113,14 +112,19 @@ when counting instructions or cycles.
 ## Rocq
 
 The Rocq side builds with dune (`dune-project` at the root, `rocq.theory`
-stanzas). `theories/EncoreExtraction.v` holds the extraction directives
-shared by every workload: `nat` becomes a 24-bit VM integer, and
-`Init.Nat.{add,mul,sub,eqb,leb,ltb}` (and their `PeanoNat.Nat` aliases)
-become VM primitives. Every workload imports it, so they all rest on the
-same (documented, unproven) assumption. `theories/EncoreInput.v` declares
-`input_byte`, an axiom realised by an Encore extern, through which
-workloads read their input buffer (APDU stream, frame) from the host
-instead of having Rust build lists on the VM heap.
+stanzas). The extraction directives come from Encore itself: the
+`rocq-encore` package (theory `Encore.Extraction`, pinned to the same
+Encore commit as the Rust crates, see `encore-benchmarks.opam.template`).
+`ExtrEncore.v` makes `nat` a 24-bit VM integer (an operation that leaves
+that range traps with `IntOverflow`), maps `Nat.add`, `sub`, `mul`,
+`pred`, `min`, `max`, the comparisons, `div`, `modulo` and the bitwise
+operations to VM primitives, and pins `bool`, `list` and `prod` to the
+constructor tags the VM pre-registers. Every workload imports it, so they
+all rest on the same (documented, unproven) assumptions, listed in
+Encore's `SCHEME.md`. `ExtrEncoreInput.v` declares `input_byte`, an axiom
+realised by an Encore extern in slot 0, through which workloads read their
+input buffer (APDU stream, frame) from the host instead of having Rust
+build lists on the VM heap.
 
 Each workload's `theories/dune` has a rule that runs its `Extract.v` and
 **promotes** the resulting `.scm` into the source tree. The `.scm` is
