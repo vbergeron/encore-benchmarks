@@ -14,10 +14,16 @@ ENTRYPOINT ["bench-rocq"]
 CMD ["check"]
 
 # Plus CertiRocq 0.9.1, built from source by certirocq/toolchain.sh, to
-# regenerate the C of variant C (workloads/*/certirocq/gen/).
+# regenerate the C of variant C (workloads/*/certirocq/gen/). Both steps
+# download (opam sources, git clones); behind a TLS-intercepting proxy, pass
+# its CA as the build secret extra_ca (docker/rocq.sh does, from
+# BENCH_EXTRA_CA or SSL_CERT_FILE), and docker/with-ca.sh trusts it.
 FROM rocq AS certirocq
-RUN opam install -y coq-core coq-stdlib stdlib-shims menhir ppx_optcomp \
+COPY docker/with-ca.sh /usr/local/bin/with-ca
+RUN --mount=type=secret,id=extra_ca,required=false,mode=0444 \
+    with-ca opam install -y coq-core coq-stdlib stdlib-shims menhir ppx_optcomp \
  && opam clean -a -c -s --logs
 COPY certirocq/toolchain.sh certirocq/certirocq-no-wasm.patch /tmp/certirocq/
-RUN opam exec -- bash /tmp/certirocq/toolchain.sh /tmp/certirocq/build \
+RUN --mount=type=secret,id=extra_ca,required=false,mode=0444 \
+    with-ca opam exec -- bash /tmp/certirocq/toolchain.sh /tmp/certirocq/build \
  && rm -rf /tmp/certirocq

@@ -15,7 +15,11 @@ cmd="${1:-check}"
 target=rocq
 [ "$cmd" = certirocq ] && target=certirocq
 image="encore-benchmarks-$target"
-docker build --target "$target" -t "$image" -f "$root/docker/Dockerfile" "$root" >&2
+# A CA to trust while the image downloads (a TLS-intercepting proxy's).
+ca="${BENCH_EXTRA_CA:-${SSL_CERT_FILE:-}}"
+secret=()
+[ -n "$ca" ] && [ -f "$ca" ] && secret=(--secret "id=extra_ca,src=$ca")
+docker build "${secret[@]}" --target "$target" -t "$image" -f "$root/docker/Dockerfile" "$root" >&2
 mode=ro
 case "$cmd" in promote | certirocq) mode=rw ;; esac
 tty=()
