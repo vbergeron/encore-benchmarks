@@ -29,8 +29,9 @@ unsafe extern "C" {
     fn body(tinfo: *mut core::ffi::c_void) -> Value;
 }
 
-/// The cases of `vectors::CASES` that fit the RAM budget.
-const CASES: &[u32] = vectors::CASES;
+/// The cases of `vectors::CASES` that fit the RAM budget. A store of 100
+/// or 500 credentials exhausts the 20 KiB arena; see the README.
+const CASES: &[u32] = &[10, 50];
 
 fn run(n: u32) -> Result<Value, &'static str> {
     crq::run(body, crq::int(n as isize))

@@ -28,8 +28,10 @@ unsafe extern "C" {
     fn body(tinfo: *mut core::ffi::c_void) -> Value;
 }
 
-/// The cases of `vectors::CASES` that fit the RAM budget.
-const CASES: &[u32] = vectors::CASES;
+/// The cases of `vectors::CASES` that fit the RAM budget. The
+/// direct-style C recurses once per event, so 1000 events exhaust the C
+/// stack; see the README.
+const CASES: &[u32] = &[10, 100];
 
 fn run(n: u32) -> Result<Value, &'static str> {
     crq::run(body, crq::int(n as isize))
