@@ -34,7 +34,8 @@ time.
 | Variant C (CertiRocq), W0, W1, W2, W4 and W6 | done, run on both QEMU boards; see `certirocq/` |
 | W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
-| Workloads W3, W5, W7, W8 | not started (W7 next, per [the plan](PLAN.md#priorities-and-steps)) |
+| W3 (BIP32 path policy and allow-list), variants E and R | done, runs on both QEMU boards |
+| Workloads W5, W7, W8 | not started (W7 next, per [the plan](PLAN.md#priorities-and-steps)) |
 
 ## Layout
 
@@ -47,6 +48,7 @@ vendor/              Encore's Rocq extraction theory (Encore.Extraction), verbat
 workloads/<w>/       one directory per workload, see workloads/README.md
 certirocq/           C variant: CertiRocq nat mapping, runtime, generation scripts
 xtask/               host runner (`cargo xtask`): build, run, record, check
+docker/              Rocq (and CertiRocq) image, `docker/rocq.sh` to use it
 results/             benchmarks.jsonl (one row per case), see results/README.md
 ```
 
@@ -56,11 +58,12 @@ Requirements: rustup (the toolchain is pinned to Rust 1.88 by
 `rust-toolchain.toml`) and `qemu-system-arm`; the runner is the `xtask`
 crate of the workspace, so there is nothing else to install. For the Rocq
 side: Rocq 9.1 with its Stdlib 9.1, and dune ≥ 3.21 (`opam install
---deps-only .` installs them).
+--deps-only .` installs them), or only Docker (`docker/rocq.sh`).
 
 ```bash
 # Rocq: check the proofs, and re-extract the Scheme (promoted into the tree)
 dune build
+docker/rocq.sh promote      # the same without a local Rocq (see below)
 
 # Host unit tests of the harness, the build helper and the runner
 cargo test
@@ -132,3 +135,19 @@ Each workload's `theories/dune` has a rule that runs its `Extract.v` and
 **promotes** the resulting `.scm` into the source tree. The `.scm` is
 committed, so building firmware needs Rust only, and CI checks that
 `dune build` leaves it unchanged.
+
+### Rocq in Docker
+
+Without a local opam switch, `docker/rocq.sh` runs the Rocq side in the
+`rocq/rocq-prover:9.1` image (the one CI uses), on a copy of the tree:
+
+```bash
+docker/rocq.sh              # check the proofs; fail if a committed .scm is stale
+docker/rocq.sh promote      # same, and write the re-extracted .scm into the tree
+docker/rocq.sh certirocq w3_policy   # regenerate variant C's C (builds CertiRocq once)
+docker/rocq.sh shell        # a shell with Rocq and dune
+```
+
+`check` is what the CI's Rocq job runs. `certirocq` builds a second image
+with CertiRocq and its dependencies (`certirocq/toolchain.sh`), which takes
+a while the first time. See [`docker/Dockerfile`](docker/Dockerfile).

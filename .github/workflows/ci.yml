@@ -8,25 +8,12 @@ jobs:
   rocq:
     name: Rocq proofs and extraction
     runs-on: ubuntu-24.04
-    # The image's opam switch belongs to its non-root user (uid 1000), but
-    # actions/checkout needs root to write the runner's files: run the
-    # container as root and drop to that user for the build.
-    container:
-      image: rocq/rocq-prover:9.1
-      options: --user root
-    defaults:
-      run:
-        shell: bash
     steps:
       - uses: actions/checkout@v4
-      - name: Build theories and re-extract
-        run: |
-          user="$(getent passwd 1000 | cut -d: -f1)"
-          echo "building as ${user:?no uid 1000 user in the image}"
-          chown -R "$user" "$GITHUB_WORKSPACE"
-          su "$user" -s /bin/bash -c "cd '$GITHUB_WORKSPACE' && eval \"\$(opam env)\" && rocq --version && dune build"
-      - name: Promoted Scheme is up to date
-        run: git -c safe.directory='*' diff --exit-code -- 'workloads/*/theories/*.scm'
+      # In the rocq/rocq-prover:9.1 image, as `docker/rocq.sh` does locally:
+      # builds the theories and fails if a promoted .scm is out of date.
+      - name: Build theories and check the promoted Scheme
+        run: docker/rocq.sh check
 
   firmware:
     name: Harness tests and QEMU smoke
@@ -44,7 +31,7 @@ jobs:
         run: cargo test
       - name: Workloads on QEMU (Cortex-M3 and Cortex-M33)
         run: |
-          for w in w0_smoke w1_apdu w2_rlp w4_pin w6_cobs; do
+          for w in w0_smoke w1_apdu w2_rlp w3_policy w4_pin w6_cobs; do
             for board in qemu-lm3s6965 qemu-an505; do
               for v in r e; do
                 cargo xtask run -w "$w" -v "$v" -b "$board" --out ci.jsonl
