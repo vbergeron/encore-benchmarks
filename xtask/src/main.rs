@@ -421,6 +421,7 @@ fn cmd_run(a: &RunArgs) {
                     row.insert(k.clone(), v.clone());
                 }
             }
+            add_gc_pct(&mut row);
             row
         })
         .collect();
@@ -447,6 +448,21 @@ fn cmd_run(a: &RunArgs) {
         println!("bench: {} rows appended to {}", rows.len(), shown.display());
     }
     report_oracle(&rows, out);
+}
+
+/// `gc.pct`: share of the VM's time spent collecting, in percent (two
+/// decimals), when the firmware timed both (E, memory profile).
+fn add_gc_pct(row: &mut Record) {
+    let Some(Value::Object(gc)) = row.get_mut("gc") else {
+        return;
+    };
+    let num = |k: &str| gc.get(k).and_then(Value::as_u64);
+    if let (Some(pause), Some(run)) = (num("pause_total"), num("run_time")) {
+        if run > 0 {
+            let pct = (pause as f64 * 10_000.0 / run as f64).round() / 100.0;
+            gc.insert("pct".into(), json!(pct));
+        }
+    }
 }
 
 fn load_rows(path: &Path) -> Vec<Record> {
@@ -600,5 +616,15 @@ mod tests {
         let t = super::utc_now();
         assert_eq!(t.len(), "2026-09-23T08:59:05+00:00".len());
         assert!(t.ends_with("+00:00") && t.as_bytes()[10] == b'T');
+    }
+
+    #[test]
+    fn gc_pct() {
+        let mut row = serde_json::json!({"gc": {"pause_total": 1, "run_time": 3}});
+        super::add_gc_pct(row.as_object_mut().unwrap());
+        assert_eq!(row["gc"]["pct"], serde_json::json!(33.33));
+        let mut row = serde_json::json!({"gc": {"count": 0}});
+        super::add_gc_pct(row.as_object_mut().unwrap());
+        assert!(row["gc"].get("pct").is_none());
     }
 }

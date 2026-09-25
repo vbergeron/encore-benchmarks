@@ -20,7 +20,7 @@ latest row for each (workload, variant, board, N).
 | `cycles` | DWT boards only: `{min, median, p99, max}` cycles per run, calibration subtracted |
 | `stack_peak_bytes` | stack painting; the Encore VM has no call stack, so for E this is the Rust driver and the VM's own frames |
 | `heap_peak_bytes`, `vm_ops` | E, memory profile: heap high-water mark since boot, and VM instructions for one run. C, every profile: arena high-water mark since boot (nursery, generations and the 4 KiB `thread_info`) |
-| `gc` | E, memory profile: garbage collection during the untimed run. `count`, `reclaimed_bytes`, `live_bytes` (live after the latest collection since boot); `unit` (`insns` on QEMU, `cycles` with a DWT), `pause_total`, `pause_max_since_boot` and the time per collector phase (`mark`, `forward`, `update`, `compact`, summing to `pause_total`) |
+| `gc` | E, memory profile: garbage collection during the untimed run. `count`, `reclaimed_bytes`, `live_bytes` (live after the latest collection since boot); `unit` (`insns` on QEMU, `cycles` with a DWT), `run_time` (time inside the VM for that run, collections included), `pct` (added by the runner: `pause_total / run_time` in percent), `pause_total`, `pause_max_since_boot` and the time per collector phase (`mark`, `forward`, `update`, `compact`, summing to `pause_total`) |
 | `build` | `ram_kb`, `flash_kb` (linker budget), `reps`, `heap_bytes` (E heap, C arena), `program_bytes` (bytecode), `cps_optimize`, `c_log_nursery` (C), `features` |
 | `size` | `flash_bytes` (vector table + text + rodata + data), `ram_static_bytes` (data + bss, **includes the Encore heap**), allocated `sections`, `flash_by_crate`, largest `ram_symbols` |
 | `calibration` | overhead of an empty region, already subtracted |

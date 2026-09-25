@@ -28,6 +28,7 @@ const WORD: u64 = core::mem::size_of::<encore_vm::value::Value>() as u64;
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Snapshot {
     pub op_count: u64,
+    pub run_time: u64,
     pub peak_heap: usize,
     pub gc: GcStats,
 }
@@ -42,7 +43,7 @@ impl Snapshot {
 
 impl From<&VmStats> for Snapshot {
     fn from(st: &VmStats) -> Snapshot {
-        Snapshot { op_count: st.op_count, peak_heap: st.arena.peak_heap, gc: st.gc }
+        Snapshot { op_count: st.op_count, run_time: st.run_time, peak_heap: st.arena.peak_heap, gc: st.gc }
     }
 }
 
@@ -53,6 +54,8 @@ pub struct RunStats {
     pub ops: u64,
     /// Heap high-water mark since boot, in bytes.
     pub heap_peak_bytes: u64,
+    /// Time inside the VM, collections included, in clock units.
+    pub run_time: u64,
     /// Collections.
     pub gc_count: u64,
     /// Bytes freed by those collections.
@@ -72,6 +75,7 @@ impl RunStats {
         let (b, a) = (&before.gc, &after.gc);
         RunStats {
             ops: after.op_count - before.op_count,
+            run_time: after.run_time - before.run_time,
             heap_peak_bytes: after.peak_heap as u64 * WORD,
             gc_count: a.count - b.count,
             gc_reclaimed_bytes: (a.reclaimed - b.reclaimed) * WORD,
@@ -100,6 +104,7 @@ impl RunStats {
                 if unit != "none" {
                     let [mark, forward, update, compact] = self.gc_phases;
                     o.str("unit", unit)
+                        .u64("run_time", self.run_time)
                         .u64("pause_total", self.gc_pause_total)
                         .u64("pause_max_since_boot", self.gc_pause_max_since_boot)
                         .u64("mark", mark)
@@ -204,6 +209,7 @@ mod tests {
         before.gc.phases.mark = 5;
         let mut after = before;
         after.op_count = 350;
+        after.run_time = 1000;
         after.arena.peak_heap = 64;
         after.gc.count = 4;
         after.gc.reclaimed = 40;
@@ -217,6 +223,7 @@ mod tests {
             st,
             RunStats {
                 ops: 250,
+                run_time: 1000,
                 heap_peak_bytes: 64 * WORD,
                 gc_count: 3,
                 gc_reclaimed_bytes: 30 * WORD,
