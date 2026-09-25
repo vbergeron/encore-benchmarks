@@ -20,6 +20,6 @@ CMD ["check"]
 FROM rocq AS certirocq
 RUN opam install -y coq-core coq-stdlib stdlib-shims menhir ppx_optcomp \
  && opam clean -a -c -s --logs
-COPY certirocq/toolchain.sh certirocq/certirocq-no-wasm.patch /tmp/certirocq/
+COPY --chown=rocq certirocq/toolchain.sh certirocq/certirocq-no-wasm.patch /tmp/certirocq/
 RUN opam exec -- bash /tmp/certirocq/toolchain.sh /tmp/certirocq/build \
  && rm -rf /tmp/certirocq

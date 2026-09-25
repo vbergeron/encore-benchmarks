@@ -24,7 +24,8 @@
 set -euxo pipefail
 here="$(cd "$(dirname "$0")" && pwd)"
 work="${1:-$PWD/certirocq-toolchain}"
-mkdir -p "$work" && cd "$work"
+mkdir -p "$work"
+cd "$work"
 coqlib="$(rocq c -where)"
 
 clone() { [ -d "$2" ] || git clone -q --depth 1 -b "$3" "https://github.com/$1" "$2"; }
