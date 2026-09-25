@@ -12,7 +12,14 @@ default = ["semihosting"]
 semihosting = ["dep:cortex-m-semihosting"]
 # Calling CertiRocq-generated C and reading its values (C variants).
 certirocq = []
+# encore_vm statistics of one run (VM ops, heap peak, GC) and the clock that
+# times the GC (E variants, memory profile only).
+encore-stats = ["dep:encore_vm", "encore_vm/stats", "dep:cortex-m-rt"]
+
+[dependencies]
+encore_vm = { workspace = true, optional = true }
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))'.dependencies]
 cortex-m = { workspace = true }
 cortex-m-semihosting = { workspace = true, optional = true }
+cortex-m-rt = { workspace = true, optional = true }

@@ -39,6 +39,12 @@ fn main() -> ! {
         h.log(format_args!("encore: boot failed"));
         exit(false)
     };
+    #[cfg(feature = "stats")]
+    if let Some(clock) =
+        bench_harness::encore::start_clock(config::VM_CLOCK, config::VM_CLOCK_SCALE, &mut p)
+    {
+        vm.set_clock(clock);
+    }
 
     static mut SAMPLES: [u32; config::REPS] = [0; config::REPS];
     // SAFETY: only reference to SAMPLES, taken once in `main`.
@@ -52,7 +58,7 @@ fn main() -> ! {
 
     for &n in vectors::CASES {
         #[cfg(feature = "stats")]
-        let ops_before = vm.stats().op_count;
+        let before = bench_harness::encore::Snapshot::of(&vm);
         let out = match run(&mut vm, n) {
             Ok(out) => out,
             Err(e) => {
@@ -62,13 +68,11 @@ fn main() -> ! {
                 continue;
             }
         };
-        // Peak heap is a running maximum since boot (encore_vm has no reset),
-        // so it is read right after the untimed run; cases go by increasing N.
+        // VM statistics of the untimed run. Peak heap and longest GC pause are
+        // running maxima since boot (encore_vm has no reset), so they are read
+        // right after it; cases go by increasing N.
         #[cfg(feature = "stats")]
-        let (ops, heap_peak) = {
-            let st = vm.stats();
-            (st.op_count - ops_before, st.arena.peak_heap * core::mem::size_of::<encore_vm::value::Value>())
-        };
+        let run_stats = bench_harness::encore::RunStats::between(&before, &bench_harness::encore::Snapshot::of(&vm));
         let hash = Fnv1a::new().int(out as i64).finish();
 
         // A timed run can fail where the untimed one passed (the heap is not
@@ -86,7 +90,7 @@ fn main() -> ! {
             |r| {
                 let r = r.bool("timed_ok", timed_ok.get());
                 #[cfg(feature = "stats")]
-                let r = r.u64("vm_ops", ops).u32("heap_peak_bytes", heap_peak as u32);
+                let r = run_stats.record(r, config::VM_CLOCK_UNIT);
                 r
             },
         );

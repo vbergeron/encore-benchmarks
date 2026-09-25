@@ -56,9 +56,25 @@ pub struct Board {
     pub qemu_cpu: Option<String>,
     /// probe-rs `--chip`, for the `probe-rs` runner.
     pub chip: Option<String>,
+    /// Nanoseconds per SysTick tick (core clock source), for boards without
+    /// a DWT. Times the Encore VM's GC with SysTick in the memory profile.
+    pub systick_ns_per_tick: Option<u32>,
 }
 
 impl Board {
+    /// The clock given to `encore_vm` in the memory profile, as
+    /// `(source, scale, unit)`: `dwt` counts cycles; `systick` counts ticks
+    /// times `scale` ns, which the `qemu` runner turns into instructions
+    /// (`-icount shift=0`: 1 ns per instruction); `none` leaves times at 0.
+    pub fn vm_clock(&self) -> (&'static str, u32, &'static str) {
+        match (self.dwt, self.systick_ns_per_tick) {
+            (true, _) => ("dwt", 1, "cycles"),
+            (false, Some(ns)) if self.runner == "qemu" => ("systick", ns, "insns"),
+            (false, Some(ns)) => ("systick", ns, "ns"),
+            (false, None) => ("none", 0, "none"),
+        }
+    }
+
     pub fn load(repo_root: &Path, name: &str) -> Board {
         let path = repo_root.join("boards").join(format!("{name}.toml"));
         let text = fs::read_to_string(&path)
@@ -87,6 +103,10 @@ impl Board {
             qemu_machine: opt("qemu_machine"),
             qemu_cpu: opt("qemu_cpu"),
             chip: opt("chip"),
+            systick_ns_per_tick: t
+                .get("systick_ns_per_tick")
+                .and_then(toml::Value::as_integer)
+                .map(|n| n as u32),
         }
     }
 }
@@ -179,6 +199,10 @@ fn write_bench_config(out: &Path, c: &Config) {
     let _ = writeln!(s, "#[allow(dead_code)] pub const REPS: usize = {};", c.reps.max(1));
     let _ = writeln!(s, "#[allow(dead_code)] pub const DWT: bool = {};", c.board.dwt);
     let _ = writeln!(s, "#[allow(dead_code)] pub const CPS_OPTIMIZE: bool = {};", c.cps_optimize);
+    let (clock, scale, unit) = c.board.vm_clock();
+    let _ = writeln!(s, "#[allow(dead_code)] pub const VM_CLOCK: &str = {clock:?};");
+    let _ = writeln!(s, "#[allow(dead_code)] pub const VM_CLOCK_SCALE: u32 = {scale};");
+    let _ = writeln!(s, "#[allow(dead_code)] pub const VM_CLOCK_UNIT: &str = {unit:?};");
     fs::write(out.join("bench_config.rs"), s).expect("write bench_config.rs");
 }
 

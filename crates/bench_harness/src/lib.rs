@@ -27,6 +27,8 @@
 #[cfg(feature = "certirocq")]
 pub mod certirocq;
 pub mod cycles;
+#[cfg(feature = "encore-stats")]
+pub mod encore;
 pub mod hash;
 pub mod record;
 pub mod session;
@@ -40,7 +42,7 @@ use core::fmt::Write;
 
 pub use cycles::CycleCounter;
 pub use hash::Fnv1a;
-pub use record::{FmtBuf, Record};
+pub use record::{FmtBuf, Obj, Record};
 pub use session::Session;
 pub use summary::Summary;
 

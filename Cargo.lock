@@ -76,7 +76,9 @@ name = "bench_harness"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
+ "cortex-m-rt",
  "cortex-m-semihosting",
+ "encore_vm",
 ]
 
 [[package]]

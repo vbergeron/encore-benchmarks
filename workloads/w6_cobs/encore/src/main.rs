@@ -63,6 +63,12 @@ fn main() -> ! {
         exit(false)
     };
     vm.register_extern(0, input_byte);
+    #[cfg(feature = "stats")]
+    if let Some(clock) =
+        bench_harness::encore::start_clock(config::VM_CLOCK, config::VM_CLOCK_SCALE, &mut p)
+    {
+        vm.set_clock(clock);
+    }
 
     static mut SAMPLES: [u32; config::REPS] = [0; config::REPS];
     // SAFETY: only reference to SAMPLES, taken once in `main`.
@@ -76,7 +82,7 @@ fn main() -> ! {
 
     for &n in vectors::CASES {
         #[cfg(feature = "stats")]
-        let ops_before = vm.stats().op_count;
+        let before = bench_harness::encore::Snapshot::of(&vm);
         let mut hash = Fnv1a::new();
         let decoded = match run(&mut vm, n, Some(&mut hash)) {
             Ok(v) => v,
@@ -96,13 +102,11 @@ fn main() -> ! {
         } else {
             hash.int(-1);
         }
-        // Peak heap is a running maximum since boot (encore_vm has no reset),
-        // so it is read right after the untimed run; cases go by increasing N.
+        // VM statistics of the untimed run. Peak heap and longest GC pause are
+        // running maxima since boot (encore_vm has no reset), so they are read
+        // right after it; cases go by increasing N.
         #[cfg(feature = "stats")]
-        let (ops, heap_peak) = {
-            let st = vm.stats();
-            (st.op_count - ops_before, st.arena.peak_heap * core::mem::size_of::<Value>())
-        };
+        let run_stats = bench_harness::encore::RunStats::between(&before, &bench_harness::encore::Snapshot::of(&vm));
 
         // A timed run can fail where the untimed one passed (the heap is not
         // in the same state); the runner then marks the case failed.
@@ -119,7 +123,7 @@ fn main() -> ! {
             |r| {
                 let r = r.bool("timed_ok", timed_ok.get());
                 #[cfg(feature = "stats")]
-                let r = r.u64("vm_ops", ops).u32("heap_peak_bytes", heap_peak as u32);
+                let r = run_stats.record(r, config::VM_CLOCK_UNIT);
                 r
             },
         );

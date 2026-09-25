@@ -11,3 +11,4 @@ cycles = "none"           # QEMU has no cycle-accurate DWT
 runner = "qemu"
 qemu_machine = "lm3s6965evb"
 qemu_cpu = "cortex-m3"
+systick_ns_per_tick = 80     # SysTick period on the core clock (GC timing, memory profile)

@@ -12,9 +12,10 @@ test = false
 bench = false
 
 [features]
-# Heap peak and VM op counts. Adds a counter to the dispatch loop, so the
-# runner enables it only for the memory profile, never for timing.
-stats = ["encore_vm/stats"]
+# Heap peak, VM op counts and GC activity (count, reclaimed and live bytes,
+# pauses timed by the board's clock). Adds a counter to the dispatch loop, so
+# the runner enables it only for the memory profile, never for timing.
+stats = ["encore_vm/stats", "bench_harness/encore-stats"]
 
 [dependencies]
 bench_harness = { workspace = true }

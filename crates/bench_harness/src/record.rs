@@ -61,6 +61,15 @@ impl<'w, W: Write> Record<'w, W> {
         self
     }
 
+    /// A nested object, filled by `f`.
+    pub fn obj(mut self, k: &str, f: impl FnOnce(&mut Obj<'_, W>)) -> Self {
+        self.key(k);
+        let _ = self.out.write_char('{');
+        f(&mut Obj { out: self.out, first: true });
+        let _ = self.out.write_char('}');
+        self
+    }
+
     /// `"regions"` (always) and `"cycles": {min, median, p99, max}` (only
     /// when the counter is real, so QEMU records never carry fake cycles).
     pub fn timing(mut self, s: &Summary) -> Self {
@@ -86,6 +95,34 @@ impl<'w, W: Write> Record<'w, W> {
 
     pub fn finish(self) {
         let _ = self.out.write_str("}\n");
+    }
+}
+
+/// The fields of a nested object, see [`Record::obj`].
+pub struct Obj<'w, W: Write> {
+    out: &'w mut W,
+    first: bool,
+}
+
+impl<W: Write> Obj<'_, W> {
+    fn key(&mut self, k: &str) {
+        if !core::mem::take(&mut self.first) {
+            let _ = self.out.write_char(',');
+        }
+        let _ = write_json_str(self.out, k);
+        let _ = self.out.write_char(':');
+    }
+
+    pub fn str(&mut self, k: &str, v: &str) -> &mut Self {
+        self.key(k);
+        let _ = write_json_str(self.out, v);
+        self
+    }
+
+    pub fn u64(&mut self, k: &str, v: u64) -> &mut Self {
+        self.key(k);
+        let _ = write!(self.out, "{v}");
+        self
     }
 }
 
@@ -140,6 +177,22 @@ mod tests {
             text(&b),
             "@@BENCH {\"kind\":\"case\",\"w\":\"a\\\"b\",\"n\":7,\"h\":\"0x000000ab\",\"regions\":3,\
              \"cycles\":{\"min\":1,\"median\":2,\"p99\":3,\"max\":3},\"stack_peak_bytes\":64}\n"
+        );
+    }
+
+    #[test]
+    fn nested_object() {
+        let b = render(|b| {
+            Record::new(b, "case")
+                .obj("gc", |o| {
+                    o.u64("count", 2).str("unit", "insns");
+                })
+                .obj("empty", |_| {})
+                .finish()
+        });
+        assert_eq!(
+            text(&b),
+            "@@BENCH {\"kind\":\"case\",\"gc\":{\"count\":2,\"unit\":\"insns\"},\"empty\":{}}\n"
         );
     }
 
