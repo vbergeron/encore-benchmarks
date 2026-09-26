@@ -99,6 +99,10 @@ pub fn run_qemu(elf_path: &Path, board: &Board, count_regions: bool, timeout: u6
         .arg("-kernel")
         .arg(elf_path);
     if !count_regions {
+        // Virtual time advances 1 ns per instruction, so the SysTick clock
+        // that times the Encore GC (memory profile) reads instructions and
+        // is the same from run to run.
+        cmd.args(["-icount", "shift=0"]);
         let (code, out, _) = run_timed(cmd, elf_path, timeout, None);
         return (code, out, Vec::new());
     }

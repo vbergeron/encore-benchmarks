@@ -12,3 +12,4 @@ cycles = "none"
 runner = "qemu"
 qemu_machine = "mps2-an505"
 qemu_cpu = "cortex-m33"
+systick_ns_per_tick = 50     # SysTick period on the core clock (GC timing, memory profile)

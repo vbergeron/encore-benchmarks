@@ -30,7 +30,7 @@ time.
 | QEMU boards (M3 and M33) | done |
 | W0 smoke workload, variants E, R and C | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
-| GC pause and GC count metrics | `encore_vm` exposes them since 0.1.5 (`stats` feature, `GcStats`); not yet recorded by the workloads |
+| GC pause and GC count metrics | done: every E workload records them in the memory profile (`gc` field), in instructions on QEMU; cycles on DWT boards not validated on hardware |
 | Variant C (CertiRocq), W0 to W7 | done, run on both QEMU boards (the cases that fit the RAM budget); see `certirocq/` |
 | W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
@@ -112,9 +112,15 @@ cargo xtask minheap -w w0_smoke -v e
    row for the same workload and N. A mismatch is a bug to fix before
    measuring.
 
-The `stats` feature of `encore_vm` (heap peak, op count) puts a counter in
-the dispatch loop, so it is only enabled with `--profile memory`, never
-when counting instructions or cycles.
+The `stats` feature of `encore_vm` (heap peak, op count, GC activity) puts
+a counter in the dispatch loop, so it is only enabled with
+`--profile memory`, never when counting instructions or cycles. In that
+profile the E firmware also gives the VM a clock to time its GC pauses
+(`bench_harness::encore`): `CYCCNT` on boards with a DWT, SysTick on QEMU.
+The runner starts QEMU with `-icount shift=0` (one virtual nanosecond per
+instruction), so on QEMU the pauses read as instructions, exact to one
+SysTick tick (80 instructions on the LM3S6965, 50 on the AN505) and the
+same from run to run.
 
 ## Rocq
 
