@@ -8,6 +8,8 @@
 #   promote [dune args]    same, and write the re-extracted .scm back
 #   certirocq [w ...]      regenerate workloads/<w>/certirocq/gen/ (all by
 #                          default) and write it back; certirocq image only
+#   certirocq-check [w ...]  same without writing back; fails if a committed
+#                          gen/ differs from the regenerated one
 #   shell                  a shell in the copy
 set -euo pipefail
 cmd="${1:-check}"
@@ -41,10 +43,20 @@ case "$cmd" in
     dune build "$@"
     for f in $(stale_scm); do cp "$f" "$src/$f" && echo "promoted $f"; done
     ;;
-  certirocq)
+  certirocq | certirocq-check)
     [ -d "$(rocq c -where)/user-contrib/CertiRocq" ] ||
       { echo "bench-rocq: CertiRocq is only in the certirocq image" >&2; exit 2; }
     certirocq/generate.sh "$@"
+    if [ "$cmd" = certirocq-check ]; then
+      stale=0
+      for d in workloads/*/certirocq/gen; do
+        diff -ru "$src/$d" "$d" | head -40 >&2 || true
+        diff -rq "$src/$d" "$d" >/dev/null 2>&1 || { echo "out of date: $d" >&2; stale=1; }
+      done
+      [ "$stale" = 0 ] || { echo "regenerate with docker/rocq.sh certirocq" >&2; exit 1; }
+      echo "generated C up to date"
+      exit 0
+    fi
     for d in workloads/*/certirocq/gen; do
       if ! diff -rq "$d" "$src/$d" >/dev/null 2>&1; then
         rm -rf "${src:?}/$d" && cp -r "$d" "$src/$d" && echo "regenerated $d"
@@ -55,7 +67,7 @@ case "$cmd" in
     exec bash "$@"
     ;;
   *)
-    echo "bench-rocq: unknown command $cmd (check, promote, certirocq, shell)" >&2
+    echo "bench-rocq: unknown command $cmd (check, promote, certirocq, certirocq-check, shell)" >&2
     exit 2
     ;;
 esac

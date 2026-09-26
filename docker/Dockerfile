@@ -1,10 +1,12 @@
 # syntax=docker/dockerfile:1
 # The Rocq side of the benchmarks without a local opam switch. Run it
-# through docker/rocq.sh; see docker/README.md.
+# through docker/rocq.sh; see the README (Rocq in Docker).
 
 # Rocq 9.1 and dune: the image the CI's Rocq job uses. Enough to check the
 # proofs and re-extract the Scheme.
 FROM rocq/rocq-prover:9.1 AS rocq
+# Links the images published on GHCR (docker/image-tag.sh) to this repository.
+LABEL org.opencontainers.image.source=https://github.com/vbergeron/encore-benchmarks
 # The switch on PATH, so that the image also runs as another user:
 # docker/rocq.sh runs it as the caller, so that the files it writes into
 # the checkout belong to them.
@@ -18,6 +20,6 @@ CMD ["check"]
 FROM rocq AS certirocq
 RUN opam install -y coq-core coq-stdlib stdlib-shims menhir ppx_optcomp \
  && opam clean -a -c -s --logs
-COPY certirocq/toolchain.sh certirocq/certirocq-no-wasm.patch /tmp/certirocq/
+COPY --chown=rocq certirocq/toolchain.sh certirocq/certirocq-no-wasm.patch /tmp/certirocq/
 RUN opam exec -- bash /tmp/certirocq/toolchain.sh /tmp/certirocq/build \
  && rm -rf /tmp/certirocq
