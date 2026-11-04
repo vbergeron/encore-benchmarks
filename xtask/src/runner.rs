@@ -16,12 +16,17 @@ use crate::{ROOT, die, elf, tool};
 #[derive(Debug)]
 pub struct BudgetError {
     pub region: String,
+    /// Bytes over the budget; 0 when the statics fit but leave no stack.
     pub over: u64,
 }
 
 impl std::fmt::Display for BudgetError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{} budget exceeded by {} bytes", self.region, self.over)
+        if self.over == 0 {
+            write!(f, "{} budget leaves no room for the stack", self.region)
+        } else {
+            write!(f, "{} budget exceeded by {} bytes", self.region, self.over)
+        }
     }
 }
 
@@ -59,9 +64,14 @@ pub fn build(
 
 /// The largest RAM/flash overflow the linker reports, in rust-lld's wording
 /// (`will not fit in region 'RAM': overflowed by 12 bytes`, once per section)
-/// or GNU ld's (`region `RAM' overflowed by 12 bytes`).
+/// or GNU ld's (`region `RAM' overflowed by 12 bytes`). cortex-m-rt's
+/// `stack end address is not below stack start` (the statics fill the RAM
+/// budget exactly or nearly) counts as an overflow of 0 bytes.
 fn overflow(stderr: &str) -> Option<BudgetError> {
-    stderr
+    let no_stack = stderr
+        .contains("stack end address is not below stack start")
+        .then(|| BudgetError { region: "RAM".into(), over: 0 });
+    let over = stderr
         .match_indices("region ")
         .filter_map(|(i, m)| {
             let rest = stderr[i + m.len()..].strip_prefix(['`', '\''])?;
@@ -80,7 +90,8 @@ fn overflow(stderr: &str) -> Option<BudgetError> {
                 over: digits.parse().ok()?,
             })
         })
-        .max_by_key(|e| e.over)
+        .max_by_key(|e| e.over);
+    over.or(no_stack)
 }
 
 /// Exit code, stdout and region instruction counts of one run.
@@ -142,8 +153,12 @@ fn file_name(p: &Path) -> String {
     )
 }
 
+/// Exit code reported for a run killed at its timeout.
+pub const TIMED_OUT: i32 = -2;
+
 /// Run `cmd` to completion or until `timeout` seconds, feeding its stderr to
-/// `counter` when there is one.
+/// `counter` when there is one. A run that times out is killed and reported
+/// with [`TIMED_OUT`] and the output it printed so far.
 fn run_timed(
     mut cmd: Command,
     elf_path: &Path,
@@ -183,10 +198,10 @@ fn run_timed(
             Ok(None) if Instant::now() >= deadline => {
                 let _ = child.kill();
                 let _ = child.wait();
-                die(&format!(
-                    "{}: timed out after {timeout}s",
-                    file_name(elf_path)
-                ));
+                eprintln!("bench: {}: timed out after {timeout}s", file_name(elf_path));
+                let out = out_reader.join().expect("stdout reader");
+                let _ = err_reader.join();
+                return (TIMED_OUT, out, None);
             }
             Ok(None) => thread::sleep(Duration::from_millis(10)),
             Err(e) => die(&format!("waiting for {:?}: {e}", cmd.get_program())),
@@ -401,6 +416,9 @@ mod tests {
         let e = overflow(lld).unwrap();
         assert_eq!((e.region.as_str(), e.over), ("FLASH", 3968));
         assert!(overflow("error: linking failed\n").is_none());
+        let e = overflow("ERROR(cortex-m-rt): stack end address is not below stack start.\n").unwrap();
+        assert_eq!((e.region.as_str(), e.over), ("RAM", 0));
+        assert_eq!(e.to_string(), "RAM budget leaves no room for the stack");
         let e = overflow("ld: region `FLASH' overflowed by 1234 bytes\n").unwrap();
         assert_eq!((e.region.as_str(), e.over), ("FLASH", 1234));
     }

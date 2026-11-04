@@ -38,13 +38,19 @@ field: tags of one or two bytes, definite lengths in their shortest form
   extracted to literals in `Extract.v`.
 - **Heap**: 32 KiB by default (E). `cargo xtask minheap` finds 10.5 KiB
   for the whole case list, so every N fits the ST33J2M0 budget.
-- **C** (CertiRocq, `certirocq/`): 20 KiB arena, 2^10-word nursery. The
-  direct-style C recurses on the C stack through `read_bytes`, `split_n`
-  and the decoder, and its GC needs room for a next generation of twice
-  the previous size: the 128-byte APDU needs more than a 28 KiB arena
-  (it passes with 36 KiB), and the 261-byte one exhausts the C stack
-  even with 36 KiB. C therefore runs only N = 5 and 32 (`CASES` in
-  `certirocq/src/main.rs`).
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
+  on the C stack through `read_bytes`, `split_n` and the decoder, and its
+  GC needs room for a next generation of twice the previous size. Smallest
+  arena per case (`cargo xtask minheap -v c`, results/minheap.jsonl,
+  lm3s6965), and RAM in all (statics + peak stack): N = 5: 8.5 KiB, 9.25
+  KiB in all; N = 32: 16.5 KiB, 19.15 KiB in all; N = 128: 32.5 KiB, 41.95
+  KiB in all. N = 261 fails at every arena size: the C stack runs out, and
+  a larger arena only leaves it less of the RAM budget. With the aligned
+  arena, N = 128 (arena exhausted) fails; the rows labelled `c-arena-36k`
+  (36 KiB arena) pass every N that fits at some size. E for comparison: N
+  = 5: 0.75 KiB, 5.63 KiB in all; N = 32: 1.75 KiB, 6.63 KiB in all; N =
+  128: 5.5 KiB, 10.38 KiB in all; N = 261: 10.5 KiB, 15.38 KiB in all.
 
 The R variant is a recursive-descent parser over slices that writes the
 summary into a static buffer; it allocates nothing.

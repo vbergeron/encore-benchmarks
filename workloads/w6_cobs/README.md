@@ -27,13 +27,20 @@ encodes a frame, then decodes the encoding.
   input list, the pieces, the encoding and the decoded frame are all cons
   lists at 12 bytes per element, where R uses two static buffers (2 KiB).
 
-**C** (CertiRocq, `certirocq/`): 20 KiB arena, 2^10-word nursery. The
-entry point `c_roundtrip` returns the encoding and the decoding (the heap is
-reset between calls). The direct-style C recurses once per byte in
-`read_bytes`, `split_zero` and `dec`, about 200 bytes of C stack per byte,
-so 256 and 1024 bytes do not fit in the RAM budget: 256 exhausts the arena
-and 1024 the C stack. C therefore runs only N = 16 and 64 (`CASES` in
-`certirocq/src/main.rs`), and has no rows for the two larger frames.
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 40 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. The entry point
+  `c_roundtrip` returns the encoding and the decoding (the heap is reset
+  between calls). The direct-style C recurses once per byte in
+  `read_bytes`, `split_zero` and `dec`, about 200 bytes of C stack per
+  byte. Smallest arena per case (`cargo xtask minheap -v c`,
+  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
+  N = 16: 16.5 KiB, 19.71 KiB in all; N = 64: 16.5 KiB, 27.54 KiB in all.
+  N = 256, 1024 fail at every arena size: the C stack runs out, and a
+  larger arena only leaves it less of the RAM budget. With the aligned
+  arena, N = 64 (C stack exhausted) fails; the rows labelled `c-arena-36k`
+  (36 KiB arena) pass every N that fits at some size. E for comparison: N
+  = 16: 1 KiB, 5.91 KiB in all; N = 64: 2.75 KiB, 7.66 KiB in all; N =
+  256: 8.25 KiB, 13.16 KiB in all; N = 1024: 32.25 KiB, 37.16 KiB in all.
 
 The R variant is the classic single-pass encoder and a bounds-checked
 decoder into static buffers; it allocates nothing.

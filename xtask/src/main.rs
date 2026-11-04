@@ -3,7 +3,7 @@
 //! ```text
 //! cargo xtask run   -w w0_smoke -v e -b qemu-lm3s6965
 //! cargo xtask check
-//! cargo xtask minheap -w w0_smoke -v e
+//! cargo xtask minheap -w w0_smoke -v e      # or -v c: the CertiRocq arena
 //! cargo xtask size target/thumbv7m-none-eabi/release/w0_smoke-e
 //! ```
 //!
@@ -43,6 +43,13 @@ const ORACLE_VARIANT: &str = "R";
 fn results_path() -> String {
     ROOT.join("results")
         .join("benchmarks.jsonl")
+        .display()
+        .to_string()
+}
+
+fn minheap_path() -> String {
+    ROOT.join("results")
+        .join("minheap.jsonl")
         .display()
         .to_string()
 }
@@ -99,15 +106,9 @@ enum Cmd {
         #[arg(long, default_value_t = results_path())]
         results: String,
     },
-    /// Binary-search the smallest Encore heap that passes all cases
-    Minheap {
-        #[command(flatten)]
-        target: TargetArgs,
-        #[arg(long, default_value_t = 256)]
-        step: u64,
-        #[arg(long, default_value_t = 40 * 1024)]
-        max_heap: u64,
-    },
+    /// Smallest heap (E) or arena (C) at which each case passes, and the RAM
+    /// it then needs in all (static data + peak stack)
+    Minheap(MinheapArgs),
     /// Flash/RAM breakdown of an ELF
     Size { elf: PathBuf },
 }
@@ -144,6 +145,30 @@ struct TargetArgs {
 }
 
 #[derive(Args)]
+struct MinheapArgs {
+    #[command(flatten)]
+    target: TargetArgs,
+    /// Resolution of the result, in bytes
+    #[arg(long, default_value_t = 256)]
+    step: u64,
+    /// Spacing of the first sweep, in bytes (rounded up to a multiple of --step)
+    #[arg(long, default_value_t = 2048)]
+    coarse: u64,
+    /// Largest heap tried (default: the whole RAM budget; the sweep stops
+    /// at the first size that no longer links)
+    #[arg(long)]
+    max_heap: Option<u64>,
+    /// Seconds per probe run (a stack overflow can hang the firmware)
+    #[arg(long, default_value_t = 120)]
+    probe_timeout: u64,
+    #[arg(long, default_value_t = minheap_path())]
+    out: String,
+    /// Do not append to the results file
+    #[arg(long)]
+    dry_run: bool,
+}
+
+#[derive(Args)]
 struct RunArgs {
     #[command(flatten)]
     target: TargetArgs,
@@ -164,11 +189,7 @@ fn main() {
     match Cli::parse().cmd {
         Cmd::Run(a) => cmd_run(&a),
         Cmd::Check { results } => cmd_check(Path::new(&results)),
-        Cmd::Minheap {
-            target,
-            step,
-            max_heap,
-        } => cmd_minheap(&target, step, max_heap),
+        Cmd::Minheap(a) => cmd_minheap(&a),
         Cmd::Size { elf } => println!(
             "{}",
             serde_json::to_string_pretty(&elf::size_report(&elf)).unwrap()
@@ -314,13 +335,28 @@ fn passed(r: &Record) -> bool {
     kind(r) == "case" && r.get("timed_ok") != Some(&Value::Bool(false))
 }
 
-/// Build and run once. Returns the device records, the ELF and the features.
+/// One build and run of a firmware.
+struct Execution {
+    records: Vec<Record>,
+    elf: PathBuf,
+    features: Vec<&'static str>,
+    /// Exit code: 0 when the firmware finished; non-zero when it crashed,
+    /// reported a failure or timed out ([`runner::TIMED_OUT`]).
+    code: i32,
+    /// What the firmware printed.
+    out: String,
+}
+
+/// Build and run once. `Err` is a link failure against the budget.
+///
+/// `profile` is `timing` (instructions counted on QEMU), `memory` (the
+/// `stats` feature on) or anything else (neither: a plain run).
 fn execute(
     a: &TargetArgs,
     profile: &str,
     heap: Option<u64>,
     quiet: bool,
-) -> Result<(Vec<Record>, PathBuf, Vec<&'static str>), BudgetError> {
+) -> Result<Execution, BudgetError> {
     let board = load_board(&a.board);
     let pkg = format!("{}-{}", a.workload, a.variant.to_lowercase());
     let pdir = package_dir(&pkg);
@@ -338,11 +374,7 @@ fn execute(
         other => die(&format!("unknown runner {other:?}")),
     };
     let mut records = runner::parse_records(&out);
-    if code != 0 {
-        eprint!("{out}");
-        die(&format!("{pkg} exited with status {code}"));
-    }
-    if !regions.is_empty() {
+    if code == 0 && !regions.is_empty() {
         runner::attach_insns(&mut records, &regions);
     }
     if !quiet {
@@ -350,13 +382,21 @@ fn execute(
             println!("{PREFIX}{}", json::line(r));
         }
     }
-    Ok((records, elf, features))
+    Ok(Execution { records, elf, features, code, out })
 }
 
 fn cmd_run(a: &RunArgs) {
     let t = &a.target;
     let (records, built) = match execute(t, &a.profile, None, false) {
-        Ok((records, elf, features)) => (records, Some((elf, features))),
+        Ok(x) if x.code != 0 => {
+            eprint!("{}", x.out);
+            let pkg = format!("{}-{}", t.workload, t.variant.to_lowercase());
+            match x.code {
+                runner::TIMED_OUT => die(&format!("{pkg} timed out after {}s", t.timeout)),
+                code => die(&format!("{pkg} exited with status {code}")),
+            }
+        }
+        Ok(x) => (x.records, Some((x.elf, x.features))),
         Err(e) => {
             println!("bench: {e} — recorded as a failure (Q1)");
             let fail = json!({"kind": "fail", "workload": t.workload, "variant": t.variant.to_uppercase(),
@@ -571,42 +611,298 @@ fn cmd_check(results: &Path) {
     exit(i32::from(bad > 0));
 }
 
-/// Smallest heap (multiple of `step`) at which every case still passes.
-fn cmd_minheap(a: &TargetArgs, step: u64, max_heap: u64) {
-    let passes = |heap: u64| -> bool {
-        let good = match execute(a, "memory", Some(heap), true) {
-            Err(_) => false,
-            Ok((records, _, _)) => {
-                let cases: Vec<&Record> = records
-                    .iter()
-                    .filter(|r| matches!(kind(r), "case" | "fail"))
-                    .collect();
-                !cases.is_empty() && cases.iter().all(|r| passed(r))
-            }
-        };
-        println!("  heap {heap:>7} B: {}", if good { "pass" } else { "fail" });
-        good
-    };
+// ── minheap ─────────────────────────────────────────────────────────────────
 
-    let (mut lo, mut hi) = (0, max_heap / step);
-    if !passes(hi * step) {
-        die(&format!("fails even with {} B of heap", hi * step));
+/// What one case did in one probe run.
+struct CaseProbe {
+    ok: bool,
+    reason: Option<String>,
+    stack_peak_bytes: Option<u64>,
+    heap_peak_bytes: Option<u64>,
+}
+
+/// One probe run: the firmware built with one heap (E) or arena (C) size.
+struct Probe {
+    /// The build did not link within the RAM budget.
+    link_error: Option<String>,
+    /// `.data` + `.bss`, the heap or arena included.
+    ram_static_bytes: Option<u64>,
+    /// Keyed by `n` as JSON text, in the order the firmware ran them.
+    cases: Vec<(String, Value, CaseProbe)>,
+    /// The firmware crashed or timed out (cases after it are missing).
+    crash: Option<String>,
+}
+
+impl Probe {
+    fn case(&self, n: &str) -> Option<&CaseProbe> {
+        self.cases.iter().find(|(k, _, _)| k == n).map(|(_, _, c)| c)
     }
-    while hi - lo > 1 {
-        let mid = (lo + hi) / 2;
-        if passes(mid * step) {
-            hi = mid;
-        } else {
-            lo = mid;
+
+    fn passes(&self, n: &str) -> bool {
+        self.case(n).is_some_and(|c| c.ok)
+    }
+
+    fn reason(&self, n: &str) -> String {
+        if let Some(e) = &self.link_error {
+            return e.clone();
+        }
+        match self.case(n) {
+            Some(c) => c.reason.clone().unwrap_or_default(),
+            None => self
+                .crash
+                .clone()
+                .unwrap_or_else(|| "case not reported".into()),
         }
     }
+}
+
+fn probe(a: &TargetArgs, heap: u64, oracle: &BTreeMap<String, Value>) -> Probe {
+    let x = match execute(a, "plain", Some(heap), true) {
+        Err(e) => {
+            return Probe {
+                link_error: Some(e.to_string()),
+                ram_static_bytes: None,
+                cases: vec![],
+                crash: None,
+            };
+        }
+        Ok(x) => x,
+    };
+    let crash = match x.code {
+        0 => None,
+        runner::TIMED_OUT => Some(format!("timed out after {}s", a.timeout)),
+        code => Some(format!("firmware exited with status {code}")),
+    };
+    let num = |r: &Record, k: &str| r.get(k).and_then(Value::as_u64);
+    let cases = x
+        .records
+        .iter()
+        .filter(|r| matches!(kind(r), "case" | "fail"))
+        .map(|r| {
+            let n = field(r, "n");
+            let key = json!([a.workload, n]).to_string();
+            let stack = num(r, "stack_peak_bytes");
+            let reason = if kind(r) == "fail" {
+                Some(show(&field(r, "reason")))
+            } else if !passed(r) {
+                Some("a timed run failed".into())
+            } else if stack.is_none() {
+                // stack::peak found no paint left: the stack reached the
+                // statics (the heap), so the run cannot be trusted.
+                Some("stack reached static data".into())
+            } else if oracle
+                .get(&key)
+                .is_some_and(|h| *h != field(r, "out_hash"))
+            {
+                Some("out_hash differs from the R oracle".into())
+            } else {
+                None
+            };
+            let c = CaseProbe {
+                ok: reason.is_none(),
+                reason,
+                stack_peak_bytes: stack,
+                heap_peak_bytes: num(r, "heap_peak_bytes"),
+            };
+            (n.to_string(), n, c)
+        })
+        .collect();
+    Probe {
+        link_error: None,
+        ram_static_bytes: elf::size_report(&x.elf)["ram_static_bytes"].as_u64(),
+        cases,
+        crash,
+    }
+}
+
+/// For every case, the smallest heap (E) or arena (C), a multiple of
+/// `step`, at which it passes, and the RAM the firmware then needs in all.
+///
+/// A first sweep every `coarse` bytes, up to the RAM budget, finds for each
+/// case the first size that passes; a binary search below it refines it to
+/// `step`. Every probe runs all the cases, so the probes are shared.
+///
+/// The search does not assume that passing is monotonic in the heap size:
+/// for C, a larger arena leaves less of the RAM budget to the C stack,
+/// which direct-style code uses for its recursion, so a case can pass in a
+/// window of arena sizes only. The sweep reports the largest size that
+/// passed too, and whether a larger one failed.
+fn cmd_minheap(m: &MinheapArgs) {
+    let mut a = m.target.clone();
+    a.timeout = m.probe_timeout;
+    let step = m.step.max(1);
+    let coarse = m.coarse.div_ceil(step).max(1) * step;
+    let max_heap = m.max_heap.unwrap_or(u64::from(a.ram_kb) * 1024);
+    let oracle = oracle_table(&load_rows(Path::new(&results_path())));
+
+    let mut probes: BTreeMap<u64, Probe> = BTreeMap::new();
+    let run = |h: u64, probes: &mut BTreeMap<u64, Probe>| {
+        if !probes.contains_key(&h) {
+            let p = probe(&a, h, &oracle);
+            let shown: Vec<String> = p
+                .cases
+                .iter()
+                .map(|(_, n, c)| format!("n={}:{}", show(n), if c.ok { "pass" } else { "fail" }))
+                .collect();
+            let tail = p.link_error.as_ref().or(p.crash.as_ref());
+            println!(
+                "  heap {h:>7} B: {}{}",
+                shown.join(" "),
+                tail.map_or(String::new(), |t| format!(" ({t})"))
+            );
+            probes.insert(h, p);
+        }
+    };
+
+    // Sweep.
+    let mut h = coarse;
+    let mut max_tried = 0;
+    while h <= max_heap {
+        run(h, &mut probes);
+        if probes[&h].link_error.is_some() {
+            break;
+        }
+        max_tried = h;
+        h += coarse;
+    }
+    if max_tried == 0 {
+        die(&format!("no heap size up to {max_heap} B links"));
+    }
+    let coarse_sizes: Vec<u64> = (1..=max_tried / coarse).map(|i| i * coarse).collect();
+
+    // The cases, in the order the firmware runs them.
+    let mut cases: Vec<(String, Value)> = vec![];
+    for p in probes.values() {
+        for (k, n, _) in &p.cases {
+            if !cases.iter().any(|(c, _)| c == k) {
+                cases.push((k.clone(), n.clone()));
+            }
+        }
+    }
+    cases.sort_by_key(|(_, n)| n.as_u64());
+
+    let board = load_board(&a.board);
+    let mut base = Map::new();
+    base.insert("schema".into(), json!(SCHEMA));
+    base.insert("timestamp".into(), json!(utc_now()));
+    base.extend(provenance());
+    base.insert("workload".into(), json!(a.workload));
+    base.insert("variant".into(), json!(a.variant.to_uppercase()));
+    base.insert("board".into(), json!(board.name));
+    base.insert("core".into(), json!(board.core));
+    base.insert(
+        "build".into(),
+        json!({
+            "ram_kb": a.ram_kb,
+            "flash_kb": a.flash_kb,
+            "cps_optimize": a.cps_optimize,
+            "c_log_nursery": a.c_log_nursery,
+        }),
+    );
+    base.insert(
+        "search".into(),
+        json!({"step": step, "coarse": coarse, "max_heap_tried": max_tried}),
+    );
+
+    let mut rows = vec![];
+    for (key, n) in &cases {
+        let passing: Vec<u64> = coarse_sizes
+            .iter()
+            .copied()
+            .filter(|h| probes[h].passes(key))
+            .collect();
+        let mut row = base.clone();
+        row.insert("n".into(), n.clone());
+        let (Some(&first), Some(&last)) = (passing.first(), passing.last()) else {
+            row.insert("ok".into(), json!(false));
+            row.insert("reason".into(), json!(probes[&max_tried].reason(key)));
+            rows.push(row);
+            continue;
+        };
+        // Refine below the first size that passed.
+        let (mut lo, mut hi) = ((first - coarse) / step, first / step);
+        while hi - lo > 1 {
+            let mid = (lo + hi) / 2;
+            run(mid * step, &mut probes);
+            if probes[&(mid * step)].passes(key) {
+                hi = mid;
+            } else {
+                lo = mid;
+            }
+        }
+        let min = hi * step;
+        let at_min = &probes[&min];
+        let c = at_min.case(key).expect("passed, so reported");
+        let fails_above = coarse_sizes
+            .iter()
+            .any(|h| *h > last && !probes[h].passes(key));
+        row.insert("ok".into(), json!(true));
+        row.insert("min_heap_bytes".into(), json!(min));
+        row.insert("max_heap_pass_bytes".into(), json!(last));
+        row.insert("fails_above".into(), json!(fails_above));
+        if fails_above {
+            let above = coarse_sizes.iter().find(|h| **h > last).expect("fails_above");
+            row.insert("reason_above".into(), json!(probes[above].reason(key)));
+        }
+        row.insert("heap_peak_bytes".into(), json!(c.heap_peak_bytes));
+        row.insert("stack_peak_bytes".into(), json!(c.stack_peak_bytes));
+        row.insert("ram_static_bytes".into(), json!(at_min.ram_static_bytes));
+        row.insert(
+            "ram_total_bytes".into(),
+            json!(
+                at_min
+                    .ram_static_bytes
+                    .zip(c.stack_peak_bytes)
+                    .map(|(s, k)| s + k)
+            ),
+        );
+        rows.push(row);
+    }
+
     println!(
-        "bench: {}-{} on {}: minimum heap {} B",
+        "bench: {}-{} on {} ({} KiB RAM), {} probes:",
         a.workload,
         a.variant,
         a.board,
-        hi * step
+        a.ram_kb,
+        probes.len()
     );
+    for r in &rows {
+        let n = show(&field(r, "n"));
+        if is_ok(r) {
+            let above = if r["fails_above"] == json!(true) {
+                format!(", fails above ({})", show(&r["reason_above"]))
+            } else {
+                String::new()
+            };
+            println!(
+                "  n={n}: min heap {} B (passes up to {} B{above}); stack {} B, RAM total {} B",
+                show(&r["min_heap_bytes"]),
+                show(&r["max_heap_pass_bytes"]),
+                show(&r["stack_peak_bytes"]),
+                show(&r["ram_total_bytes"]),
+            );
+        } else {
+            println!(
+                "  n={n}: fails at every heap up to {max_tried} B ({})",
+                show(&r["reason"])
+            );
+        }
+    }
+
+    if !m.dry_run {
+        let out = Path::new(&m.out);
+        let mut f = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(out)
+            .unwrap_or_else(|e| die(&format!("{}: {e}", out.display())));
+        for row in &rows {
+            writeln!(f, "{}", json::line(row))
+                .unwrap_or_else(|e| die(&format!("{}: {e}", out.display())));
+        }
+        println!("bench: {} rows appended to {}", rows.len(), out.display());
+    }
 }
 
 #[cfg(test)]

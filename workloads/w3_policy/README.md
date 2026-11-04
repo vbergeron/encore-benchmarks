@@ -53,10 +53,18 @@ reason from the rule that came closest.
 - **Heap**: 32 KiB by default (E), as the other workloads. The heap peak
   reaches the whole heap only because the collector runs when it is full:
   `cargo xtask minheap` finds 1 KiB for the whole case list.
-  C: 20 KiB arena, 2^10-word nursery.
-- **C** (CertiRocq, `certirocq/`): with 64 rules the run exhausts the
-  20 KiB arena (the runtime aborts). C therefore runs only N = 1, 4 and 16
-  (`CASES` in `certirocq/src/main.rs`), and has no row for N = 64.
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. With 64 rules the GC needs
+  its third generation (16 KiB), which a 32 KiB arena misses by a few
+  hundred bytes. Smallest arena per case (`cargo xtask minheap -v c`,
+  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
+  N = 1: 16.5 KiB, 19.23 KiB in all; N = 4: 16.5 KiB, 19.49 KiB in all; N
+  = 16: 16.5 KiB, 20.52 KiB in all; N = 64: 32.5 KiB, 41.3 KiB in all.
+  With the aligned arena, N = 64 (arena exhausted) fails; the rows
+  labelled `c-arena-36k` (36 KiB arena) pass every N that fits at some
+  size. E for comparison: N = 1: 1 KiB, 5.88 KiB in all; N = 4: 1 KiB,
+  5.88 KiB in all; N = 16: 1 KiB, 5.88 KiB in all; N = 64: 1 KiB, 5.88 KiB
+  in all.
 
 Not modelled: the key derivation itself and the signature (they stay in
 the Rust layer, which derives the key of the path the Gallina accepted),

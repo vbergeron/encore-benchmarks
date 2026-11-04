@@ -29,10 +29,6 @@ unsafe extern "C" {
     fn body(tinfo: *mut core::ffi::c_void) -> Value;
 }
 
-/// The cases of `vectors::CASES` that fit the RAM budget. With 64 rules
-/// the 20 KiB arena is exhausted; see the README.
-const CASES: &[u32] = &[1, 4, 16];
-
 fn run(n: u32) -> Result<Value, &'static str> {
     crq::run(body, crq::int(n as isize))
 }
@@ -53,7 +49,10 @@ fn main() -> ! {
             .u32("c_log_nursery", config::C_LOG_NURSERY)
     });
 
-    for &n in CASES {
+    // Every case of the other variants, so that E, C and R are compared on
+    // the same N. A case that does not fit (arena or C stack exhausted) is
+    // recorded as failed, with the reason.
+    for &n in vectors::CASES {
         let verdicts = match run(n) {
             Ok(v) => v,
             Err(reason) => {

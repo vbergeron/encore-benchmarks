@@ -29,11 +29,6 @@ unsafe extern "C" {
     fn body(tinfo: *mut core::ffi::c_void) -> Value;
 }
 
-/// The cases of `vectors::CASES` that fit the RAM budget. The 317-byte
-/// payload of N = 260 exhausts the 20 KiB arena, and the C stack with a
-/// larger one; see the README.
-const CASES: &[u32] = &[0, 4, 68];
-
 /// Run the case with `n` bytes of calldata: decode its payload and render
 /// the screen.
 fn run(n: u32) -> Result<Value, &'static str> {
@@ -55,7 +50,10 @@ fn main() -> ! {
             .u32("c_log_nursery", config::C_LOG_NURSERY)
     });
 
-    for &n in CASES {
+    // Every case of the other variants, so that E, C and R are compared on
+    // the same N. A case that does not fit (arena or C stack exhausted) is
+    // recorded as failed, with the reason.
+    for &n in vectors::CASES {
         crq::set_input(vectors::payload(n));
         let screen = match run(n) {
             Ok(v) => v,

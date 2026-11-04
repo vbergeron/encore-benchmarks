@@ -29,12 +29,18 @@ instruction".
 - **Trust**: `nat` as VM integers (`ExtrEncore.v`); `input_byte`
   realised by the host (`ExtrEncoreInput.v`); the constants of `Pin.v` (INS
   bytes, counter maxima) extracted to literals in `Extract.v`.
-- **Heap**: 32 KiB by default (E). C: 20 KiB arena, 2^10-word nursery.
-- **C** (CertiRocq, `certirocq/`): the direct-style C recurses once per
-  APDU (`process` is not tail-recursive), about 94 bytes of C stack each;
-  1000 APDUs do not fit in the RAM budget (the runtime aborts with the
-  20 KiB arena exhausted). C therefore runs only N = 1, 10 and 100
-  (`CASES` in `certirocq/src/main.rs`), and has no row for N = 1000.
+- **Heap**: 32 KiB by default (E).
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
+  once per APDU (`process` is not tail-recursive), about 94 bytes of C
+  stack each. Smallest arena per case (`cargo xtask minheap -v c`,
+  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
+  N = 1: 8.5 KiB, 9.25 KiB in all; N = 10: 8.5 KiB, 10.02 KiB in all; N =
+  100: 16.5 KiB, 25.77 KiB in all. N = 1000 fails at every arena size: the
+  C stack runs out, and a larger arena only leaves it less of the RAM
+  budget. E for comparison: N = 1: 0.75 KiB, 5.62 KiB in all; N = 10: 1
+  KiB, 5.88 KiB in all; N = 100: 2.5 KiB, 7.38 KiB in all; N = 1000: 28
+  KiB, 32.88 KiB in all.
 
 Not modelled: constant-time comparison (the Gallina and the Rust both stop
 at the first differing digit), and anti-tearing (real cards decrement the
