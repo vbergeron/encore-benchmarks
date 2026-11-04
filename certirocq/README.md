@@ -155,12 +155,51 @@ nursery. W8 has no C variant yet.
   smaller one (2^6 to 2^9) saves 20 to 60 % on the others. No size is best
   everywhere: with generations that double, the arena a run needs is a
   step function of the nursery size, and where the steps fall depends on
-  the live data. The timing rows use 2^10.
+  the live data. The `aligned-budget-all-n` and `c-arena-36k` timing rows
+  use 2^10; the `c-best-nursery` rows use the best-RAM nursery (below).
 - With its best nursery, C needs 1.5 to 3.4 times E's RAM once N is not
   trivial. It is level with E (1.0 to 1.1×) only on the smallest cases,
   where the Encore VM's fixed stack (about 4.9 KiB: driver and VM frames)
   dominates.
 - The nursery does not change which cases fail.
+
+### The price in instructions
+
+The nursery that minimises C's RAM is not free: a smaller nursery
+collects more often. Timing rows labelled `c-best-nursery` (both QEMU
+boards) run each case at its best-RAM nursery, with the smallest arena
+that passes rounded up to 1 KiB (the arena size does not change the
+count as long as it is not exhausted; the other cases of those runs fail
+for want of arena, as expected). Against the default 2^10 (lm3s6965):
+
+| Workload | N | best-RAM nursery | C instr. at 2^10 | C instr. at best-RAM nursery | change |
+|---|---|---|---|---|---|
+| w0_smoke | 1 | 2^6 | 502 | 522 | +4 % |
+| w0_smoke | 10 | 2^7 | 1 636 | 1 651 | +1 % |
+| w0_smoke | 100 | 2^8 | 20 893 | 27 022 | +29 % |
+| w1_apdu | 5 | 2^7 | 4 822 | 4 837 | +0 % |
+| w1_apdu | 32 | 2^8 | 22 344 | 31 287 | +40 % |
+| w1_apdu | 128 | 2^9 | 174 944 | 196 381 | +12 % |
+| w2_rlp | 0 | 2^8 | 75 451 | 113 065 | +50 % |
+| w2_rlp | 4 | 2^8 | 54 481 | 78 796 | +45 % |
+| w2_rlp | 68 | 2^10 | 115 496 | 115 496 | +0 % |
+| w3_policy | 1 | 2^6 | 76 371 | 137 524 | +80 % |
+| w3_policy | 4 | 2^7 | 267 456 | 371 359 | +39 % |
+| w3_policy | 16 | 2^6 | 897 018 | 1 695 637 | +89 % |
+| w3_policy | 64 | 2^6 | 2 770 188 | 5 403 725 | +95 % |
+| w4_pin | 1 | 2^6 | 3 333 | 5 830 | +75 % |
+| w4_pin | 10 | 2^6 | 12 411 | 28 595 | +130 % |
+| w4_pin | 100 | 2^8 | 172 373 | 267 293 | +55 % |
+| w5_update | 10 | 2^6 | 27 411 | 49 723 | +81 % |
+| w5_update | 100 | 2^6 | 266 599 | 921 312 | +246 % |
+| w6_cobs | 16 | 2^7 | 14 072 | 19 686 | +40 % |
+| w6_cobs | 64 | 2^9 | 57 667 | 62 563 | +8 % |
+| w7_store | 10 | 2^8 | 23 403 | 28 748 | +23 % |
+| w7_store | 50 | 2^8 | 92 619 | 134 720 | +45 % |
+| w7_store | 100 | 2^8 | 222 745 | 346 334 | +55 % |
+
+The README's summary gives E's instruction count over C's at both
+nurseries.
 
 ## Why the failing cases fail
 

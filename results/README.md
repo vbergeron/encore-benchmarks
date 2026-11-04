@@ -7,7 +7,7 @@ latest row for each (workload, variant, board, N).
 | Field | Meaning |
 |---|---|
 | `schema` | row format version (1) |
-| `timestamp`, `label` | when, and a free-form tag (`--label`) |
+| `timestamp`, `label` | when, and a free-form tag (`--label`). C rows: `aligned-budget-all-n` (arena = E heap), `c-arena-36k` (36 KiB arena), `c-best-nursery` (each run at the nursery that minimises the RAM of some cases, with their smallest arena: only those cases pass) |
 | `commit`, `dirty` | this repository's commit; `dirty` = uncommitted changes to tracked files |
 | `encore_version`, `rustc` | from `Cargo.lock` and `rustc --version` |
 | `workload`, `variant`, `n` | what was measured (`E`, `C`, `R`) |
