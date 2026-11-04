@@ -151,11 +151,11 @@ nursery. W8 has no C variant yet.
 | w7_store | 100 | 8.4 | 45.2 | 28.9 | **28.4** | 43.4 | 41.6 | 3.4× |
 | w7_store | 500 | 17.6 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
 
-- The default 2^10 is the best nursery for one case only (W2 N = 68);
-  a smaller one (2^6 to 2^9) saves 20 to 60 % on the others. No size is best everywhere: with
-  generations that double, the arena a run needs is a step function of
-  the nursery size, and where the steps fall depends on the live data.
-  The timing rows use 2^10.
+- The default 2^10 is the best nursery for one case only (W2 N = 68); a
+  smaller one (2^6 to 2^9) saves 20 to 60 % on the others. No size is best
+  everywhere: with generations that double, the arena a run needs is a
+  step function of the nursery size, and where the steps fall depends on
+  the live data. The timing rows use 2^10.
 - With its best nursery, C needs 1.5 to 3.4 times E's RAM once N is not
   trivial. It is level with E (1.0 to 1.1×) only on the smallest cases,
   where the Encore VM's fixed stack (about 4.9 KiB: driver and VM frames)
