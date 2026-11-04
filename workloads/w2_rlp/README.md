@@ -40,15 +40,15 @@ and the value, nonce, gas price and gas limit in decimal.
 - **Heap**: 32 KiB by default (E). `cargo xtask minheap` finds 16.75 KiB
   for the whole case list, so every N fits the ST33J2M0 budget.
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
-  once per byte in `read_bytes`, `split_n` and `hex`. Smallest arena per
-  case (`cargo xtask minheap -v c`, results/minheap.jsonl, lm3s6965), and
-  RAM in all (statics + peak stack): N = 0: 16.5 KiB, 20.07 KiB in all; N
-  = 4: 16.5 KiB, 19.72 KiB in all; N = 68: 16.5 KiB, 24.36 KiB in all. N =
-  260 fails at every arena size: the C stack runs out, and a larger arena
-  only leaves it less of the RAM budget. E for comparison: N = 0: 2.75
-  KiB, 7.63 KiB in all; N = 4: 2.5 KiB, 7.38 KiB in all; N = 68: 5.75 KiB,
-  10.63 KiB in all; N = 260: 16.75 KiB, 21.63 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. The direct-style
+  C recurses once per byte in `read_bytes`, `split_n` and `hex`. RAM in
+  all (statics + peak stack) at the smallest arena that passes, with the
+  best nursery of 2^6 to 2^10 words (`cargo xtask minheap -v c
+  --c-log-nursery k`, results/minheap.jsonl, lm3s6965): N = 0: 15.1 KiB
+  (2^8, 20.1 with the default 2^10; E 7.6); N = 4: 14.7 KiB (2^8, 19.7
+  with the default 2^10; E 7.4); N = 68: 24.4 KiB (2^10; E 10.6). N = 260
+  fails at every arena and nursery size: the C stack runs out, and a
+  larger arena only leaves it less of the RAM budget.
 
 Not modelled: the signature itself (Keccak and secp256k1 stay in the Rust
 layer, which signs the bytes the Gallina accepted), typed transactions

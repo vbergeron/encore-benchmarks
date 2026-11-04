@@ -54,17 +54,17 @@ reason from the rule that came closest.
   reaches the whole heap only because the collector runs when it is full:
   `cargo xtask minheap` finds 1 KiB for the whole case list.
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. With 64 rules the GC needs
-  its third generation (16 KiB), which a 32 KiB arena misses by a few
-  hundred bytes. Smallest arena per case (`cargo xtask minheap -v c`,
-  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
-  N = 1: 16.5 KiB, 19.23 KiB in all; N = 4: 16.5 KiB, 19.49 KiB in all; N
-  = 16: 16.5 KiB, 20.52 KiB in all; N = 64: 32.5 KiB, 41.3 KiB in all.
-  With the aligned arena, N = 64 (arena exhausted) fails; the rows
-  labelled `c-arena-36k` (36 KiB arena) pass every N that fits at some
-  size. E for comparison: N = 1: 1 KiB, 5.88 KiB in all; N = 4: 1 KiB,
-  5.88 KiB in all; N = 16: 1 KiB, 5.88 KiB in all; N = 64: 1 KiB, 5.88 KiB
-  in all.
+  heap, 2^10-word nursery by default, and C runs every N. With 64 rules
+  the GC needs its third generation (16 KiB), which a 32 KiB arena misses
+  by a few hundred bytes. RAM in all (statics + peak stack) at the
+  smallest arena that passes, with the best nursery of 2^6 to 2^10 words
+  (`cargo xtask minheap -v c --c-log-nursery k`, results/minheap.jsonl,
+  lm3s6965): N = 1: 9.0 KiB (2^6, 19.2 with the default 2^10; E 5.9); N =
+  4: 11.0 KiB (2^7, 19.5 with the default 2^10; E 5.9); N = 16: 12.3 KiB
+  (2^6, 20.5 with the default 2^10; E 5.9); N = 64: 17.0 KiB (2^6, 41.3
+  with the default 2^10; E 5.9). With the aligned arena, N = 64 (arena
+  exhausted) fails; the rows labelled `c-arena-36k` (36 KiB arena) pass
+  every N that fits at some size.
 
 Not modelled: the key derivation itself and the signature (they stay in
 the Rust layer, which derives the key of the path the Gallina accepted),

@@ -68,16 +68,17 @@ command.
   so the live heap grows with N; `cargo xtask minheap` finds 28 KiB for the
   whole case list (N = 1000).
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
-  once per event (`process` is not tail-recursive). `modulus` (65521)
-  needs `Nat.tail_add` and `tail_mul` in `certirocq/theories/BenchNat.v`:
-  see there. Smallest arena per case (`cargo xtask minheap -v c`,
-  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
-  N = 10: 16.5 KiB, 19.02 KiB in all; N = 100: 16.5 KiB, 28.05 KiB in all.
-  N = 1000 fails at every arena size: the C stack runs out, and a larger
-  arena only leaves it less of the RAM budget. E for comparison: N = 10: 1
-  KiB, 5.88 KiB in all; N = 100: 2.5 KiB, 7.38 KiB in all; N = 1000: 28
-  KiB, 32.88 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. The direct-style
+  C recurses once per event (`process` is not tail-recursive). `modulus`
+  (65521) needs `Nat.tail_add` and `tail_mul` in
+  `certirocq/theories/BenchNat.v`: see there. RAM in all (statics + peak
+  stack) at the smallest arena that passes, with the best nursery of 2^6
+  to 2^10 words (`cargo xtask minheap -v c --c-log-nursery k`,
+  results/minheap.jsonl, lm3s6965): N = 10: 8.8 KiB (2^6, 19.0 with the
+  default 2^10; E 5.9); N = 100: 19.9 KiB (2^6, 28.1 with the default
+  2^10; E 7.4). N = 1000 fails at every arena and nursery size: the C
+  stack runs out, and a larger arena only leaves it less of the RAM
+  budget.
 
 Not modelled: the flash itself (a slot is its trailer, the number of
 chunks and a running digest, not its bytes), a real digest or signature

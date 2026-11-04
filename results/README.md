@@ -47,8 +47,8 @@ Things to keep in mind when reading them:
 ## minheap.jsonl
 
 `cargo xtask minheap -w <w> -v e|c` appends one row per (workload, variant,
-board, N): the RAM a case needs, comparable between E and C. Use the
-latest row for each key.
+board, N, and for C `build.c_log_nursery`): the RAM a case needs,
+comparable between E and C. Use the latest row for each key.
 
 | Field | Meaning |
 |---|---|

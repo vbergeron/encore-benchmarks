@@ -39,6 +39,55 @@ time.
 | W5 (A/B firmware update with anti-rollback), variants E, R and C | done, runs on both QEMU boards |
 | W8 (CRC-16/MODBUS and CRC-32 in Gallina), variants E and R | done, runs on both QEMU boards; C not built yet (see `workloads/w8_crc/README.md`) |
 
+## Results so far (QEMU)
+
+RAM a case needs in all (statics with the smallest heap or arena that
+passes, plus the peak stack), in KiB, on a 50 KiB budget (lm3s6965; the
+AN505 gives the same figures). C at its best nursery of 2^6 to 2^10 words
+(full table and analysis in [certirocq/README.md](certirocq/README.md)).
+The last column is E's instruction count over C's (timing rows, C with
+its default 2^10 nursery): instructions, not cycles.
+
+| Workload | N | E RAM | C RAM (best nursery) | C / E | E / C instructions |
+|---|---|---|---|---|---|
+| w0_smoke | 1 | 5.1 | 5.2 (2^6) | 1.0× | 14× |
+| w0_smoke | 10 | 5.4 | 6.0 (2^7) | 1.1× | 21× |
+| w0_smoke | 100 | 8.1 | 14.1 (2^8) | 1.7× | 18× |
+| w0_smoke | 1000 | 36.4 | does not fit | — | — |
+| w1_apdu | 5 | 5.6 | 5.8 (2^7) | 1.0× | 5× |
+| w1_apdu | 32 | 6.6 | 10.2 (2^8) | 1.5× | 20× |
+| w1_apdu | 128 | 10.4 | 27.9 (2^9) | 2.7× | 15× |
+| w1_apdu | 261 | 15.4 | does not fit | — | — |
+| w2_rlp | 0 | 7.6 | 15.1 (2^8) | 2.0× | 19× |
+| w2_rlp | 4 | 7.4 | 14.7 (2^8) | 2.0× | 17× |
+| w2_rlp | 68 | 10.6 | 24.4 (2^10) | 2.3× | 18× |
+| w2_rlp | 260 | 21.6 | does not fit | — | — |
+| w3_policy | 1 | 5.9 | 9.0 (2^6) | 1.5× | 10× |
+| w3_policy | 4 | 5.9 | 11.0 (2^7) | 1.9× | 10× |
+| w3_policy | 16 | 5.9 | 12.3 (2^6) | 2.1× | 10× |
+| w3_policy | 64 | 5.9 | 17.0 (2^6) | 2.9× | 10× |
+| w4_pin | 1 | 5.6 | 6.0 (2^6) | 1.1× | 10× |
+| w4_pin | 10 | 5.9 | 7.8 (2^6) | 1.3× | 27× |
+| w4_pin | 100 | 7.4 | 20.7 (2^8) | 2.8× | 24× |
+| w4_pin | 1000 | 32.9 | does not fit | — | — |
+| w5_update | 10 | 5.9 | 8.8 (2^6) | 1.5× | 10× |
+| w5_update | 100 | 7.4 | 19.9 (2^6) | 2.7× | 10× |
+| w5_update | 1000 | 32.9 | does not fit | — | — |
+| w6_cobs | 16 | 5.9 | 9.2 (2^7) | 1.6× | 17× |
+| w6_cobs | 64 | 7.7 | 21.5 (2^9) | 2.8× | 19× |
+| w6_cobs | 256 | 13.2 | does not fit | — | — |
+| w6_cobs | 1024 | 37.2 | does not fit | — | — |
+| w7_store | 10 | 6.4 | 10.4 (2^8) | 1.6× | 9× |
+| w7_store | 50 | 7.4 | 16.4 (2^8) | 2.2× | 8× |
+| w7_store | 100 | 8.4 | 28.4 (2^8) | 3.4× | 7× |
+| w7_store | 500 | 17.6 | does not fit | — | — |
+
+In short: on this budget E runs every case, C fails on 8 of 31 for want
+of C stack (direct-style code recurses on it); where both run, C needs 1.5
+to 3.4 times E's RAM beyond the smallest cases, and E executes 5 to 27
+times more instructions. E's flash is 32 to 49 KiB against 10 to 31 KiB
+for C (the VM and the bytecode). Speed conclusions wait for the boards.
+
 ## Layout
 
 ```

@@ -39,18 +39,19 @@ field: tags of one or two bytes, definite lengths in their shortest form
 - **Heap**: 32 KiB by default (E). `cargo xtask minheap` finds 10.5 KiB
   for the whole case list, so every N fits the ST33J2M0 budget.
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
-  on the C stack through `read_bytes`, `split_n` and the decoder, and its
-  GC needs room for a next generation of twice the previous size. Smallest
-  arena per case (`cargo xtask minheap -v c`, results/minheap.jsonl,
-  lm3s6965), and RAM in all (statics + peak stack): N = 5: 8.5 KiB, 9.25
-  KiB in all; N = 32: 16.5 KiB, 19.15 KiB in all; N = 128: 32.5 KiB, 41.95
-  KiB in all. N = 261 fails at every arena size: the C stack runs out, and
-  a larger arena only leaves it less of the RAM budget. With the aligned
-  arena, N = 128 (arena exhausted) fails; the rows labelled `c-arena-36k`
-  (36 KiB arena) pass every N that fits at some size. E for comparison: N
-  = 5: 0.75 KiB, 5.63 KiB in all; N = 32: 1.75 KiB, 6.63 KiB in all; N =
-  128: 5.5 KiB, 10.38 KiB in all; N = 261: 10.5 KiB, 15.38 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. The direct-style
+  C recurses on the C stack through `read_bytes`, `split_n` and the
+  decoder, and its GC needs room for a next generation of twice the
+  previous size. RAM in all (statics + peak stack) at the smallest arena
+  that passes, with the best nursery of 2^6 to 2^10 words (`cargo xtask
+  minheap -v c --c-log-nursery k`, results/minheap.jsonl, lm3s6965): N =
+  5: 5.8 KiB (2^7, 9.2 with the default 2^10; E 5.6); N = 32: 10.2 KiB
+  (2^8, 19.1 with the default 2^10; E 6.6); N = 128: 27.9 KiB (2^9, 41.9
+  with the default 2^10; E 10.4). N = 261 fails at every arena and nursery
+  size: the C stack runs out, and a larger arena only leaves it less of
+  the RAM budget. With the aligned arena, N = 128 (arena exhausted) fails;
+  the rows labelled `c-arena-36k` (36 KiB arena) pass every N that fits at
+  some size.
 
 The R variant is a recursive-descent parser over slices that writes the
 summary into a static buffer; it allocates nothing.

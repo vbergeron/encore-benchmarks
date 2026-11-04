@@ -54,18 +54,18 @@ real use and a scale-up to 500 entries.
   12.75 KiB for the whole case list. The heap peak reaches the whole heap
   from N = 50 up only because the collector runs when it is full.
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. A store of 100 credentials
-  needs the GC's third generation (16 KiB), which a 32 KiB arena misses by
-  a few hundred bytes. Smallest arena per case (`cargo xtask minheap -v
-  c`, results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak
-  stack): N = 10: 8.5 KiB, 11.38 KiB in all; N = 50: 16.5 KiB, 21.39 KiB
-  in all; N = 100: 32.5 KiB, 41.57 KiB in all. N = 500 fails at every
-  arena size: the C stack runs out, and a larger arena only leaves it less
-  of the RAM budget. With the aligned arena, N = 100 (arena exhausted)
-  fails; the rows labelled `c-arena-36k` (36 KiB arena) pass every N that
-  fits at some size. E for comparison: N = 10: 1.5 KiB, 6.38 KiB in all; N
-  = 50: 2.5 KiB, 7.38 KiB in all; N = 100: 3.5 KiB, 8.38 KiB in all; N =
-  500: 12.75 KiB, 17.62 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. A store of 100
+  credentials needs the GC's third generation (16 KiB), which a 32 KiB
+  arena misses by a few hundred bytes. RAM in all (statics + peak stack)
+  at the smallest arena that passes, with the best nursery of 2^6 to 2^10
+  words (`cargo xtask minheap -v c --c-log-nursery k`,
+  results/minheap.jsonl, lm3s6965): N = 10: 10.4 KiB (2^8, 11.4 with the
+  default 2^10; E 6.4); N = 50: 16.4 KiB (2^8, 21.4 with the default 2^10;
+  E 7.4); N = 100: 28.4 KiB (2^8, 41.6 with the default 2^10; E 8.4). N =
+  500 fails at every arena and nursery size: the C stack runs out, and a
+  larger arena only leaves it less of the RAM budget. With the aligned
+  arena, N = 100 (arena exhausted) fails; the rows labelled `c-arena-36k`
+  (36 KiB arena) pass every N that fits at some size.
 
 Not modelled: deletion (a red-black delete is the other half of a real
 store, and a much longer proof), the credential itself (key pair, user and

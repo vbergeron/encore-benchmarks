@@ -31,16 +31,16 @@ instruction".
   bytes, counter maxima) extracted to literals in `Extract.v`.
 - **Heap**: 32 KiB by default (E).
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
-  once per APDU (`process` is not tail-recursive), about 94 bytes of C
-  stack each. Smallest arena per case (`cargo xtask minheap -v c`,
-  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
-  N = 1: 8.5 KiB, 9.25 KiB in all; N = 10: 8.5 KiB, 10.02 KiB in all; N =
-  100: 16.5 KiB, 25.77 KiB in all. N = 1000 fails at every arena size: the
-  C stack runs out, and a larger arena only leaves it less of the RAM
-  budget. E for comparison: N = 1: 0.75 KiB, 5.62 KiB in all; N = 10: 1
-  KiB, 5.88 KiB in all; N = 100: 2.5 KiB, 7.38 KiB in all; N = 1000: 28
-  KiB, 32.88 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. The direct-style
+  C recurses once per APDU (`process` is not tail-recursive), about 94
+  bytes of C stack each. RAM in all (statics + peak stack) at the smallest
+  arena that passes, with the best nursery of 2^6 to 2^10 words (`cargo
+  xtask minheap -v c --c-log-nursery k`, results/minheap.jsonl, lm3s6965):
+  N = 1: 6.0 KiB (2^6, 9.2 with the default 2^10; E 5.6); N = 10: 7.8 KiB
+  (2^6, 10.0 with the default 2^10; E 5.9); N = 100: 20.7 KiB (2^8, 25.8
+  with the default 2^10; E 7.4). N = 1000 fails at every arena and nursery
+  size: the C stack runs out, and a larger arena only leaves it less of
+  the RAM budget.
 
 Not modelled: constant-time comparison (the Gallina and the Rust both stop
 at the first differing digit), and anti-tearing (real cards decrement the

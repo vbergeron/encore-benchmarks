@@ -107,3 +107,103 @@ settable) and `bench_rt.c`:
   because the C stack runs out: W0 N = 1000, W1 N = 261, W2 N = 260,
   W4 N = 1000, W5 N = 1000, W6 N = 256 and 1024, W7 N = 500. The workload
   READMEs give the figures.
+
+## RAM against Encore, by nursery size
+
+RAM in all, in KiB (statics with the smallest arena that passes, plus the
+peak stack), for nurseries of 2^6 to 2^10 words, against E's at its
+smallest heap (`cargo xtask minheap`, `results/minheap.jsonl`,
+lm3s6965; the AN505 gives the same figures). Bold: the best nursery for
+the case. ✗: the case passes at no arena size within 50 KiB, with any
+nursery. W8 has no C variant yet.
+
+| Workload | N | E | C 2^6 | C 2^7 | C 2^8 | C 2^9 | C 2^10 | best C / E |
+|---|---|---|---|---|---|---|---|---|
+| w0_smoke | 1 | 5.1 | **5.2** | 5.4 | 5.9 | 6.9 | 8.9 | 1.0× |
+| w0_smoke | 10 | 5.4 | 6.2 | **6.0** | 6.5 | 7.5 | 9.5 | 1.1× |
+| w0_smoke | 100 | 8.1 | 14.9 | 14.6 | **14.1** | 17.1 | 23.1 | 1.7× |
+| w0_smoke | 1000 | 36.4 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w1_apdu | 5 | 5.6 | 6.0 | **5.8** | 6.2 | 7.2 | 9.2 | 1.0× |
+| w1_apdu | 32 | 6.6 | 10.9 | 10.6 | **10.2** | 13.1 | 19.1 | 1.5× |
+| w1_apdu | 128 | 10.4 | 29.6 | 29.4 | 28.9 | **27.9** | 41.9 | 2.7× |
+| w1_apdu | 261 | 15.4 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w2_rlp | 0 | 7.6 | 15.8 | 15.7 | **15.1** | 22.1 | 20.1 | 2.0× |
+| w2_rlp | 4 | 7.4 | 15.5 | 15.2 | **14.7** | 21.7 | 19.7 | 2.0× |
+| w2_rlp | 68 | 10.6 | 28.2 | 27.9 | 27.4 | 26.4 | **24.4** | 2.3× |
+| w2_rlp | 260 | 21.6 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w3_policy | 1 | 5.9 | **9.0** | 10.7 | 10.2 | 13.2 | 19.2 | 1.5× |
+| w3_policy | 4 | 5.9 | 11.2 | **11.0** | 14.5 | 13.5 | 19.5 | 1.9× |
+| w3_policy | 16 | 5.9 | **12.3** | 16.0 | 15.5 | 22.5 | 20.5 | 2.1× |
+| w3_policy | 64 | 5.9 | **17.0** | 20.8 | 20.3 | 27.3 | 41.3 | 2.9× |
+| w4_pin | 1 | 5.6 | **6.0** | 6.8 | 6.2 | 7.2 | 9.2 | 1.1× |
+| w4_pin | 10 | 5.9 | **7.8** | 9.5 | 9.0 | 12.0 | 10.0 | 1.3× |
+| w4_pin | 100 | 7.4 | 21.5 | 21.3 | **20.7** | 27.7 | 25.8 | 2.8× |
+| w4_pin | 1000 | 32.9 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w5_update | 10 | 5.9 | **8.8** | 10.5 | 10.0 | 13.0 | 19.0 | 1.5× |
+| w5_update | 100 | 7.4 | **19.9** | 23.7 | 23.1 | 30.1 | 28.1 | 2.7× |
+| w5_update | 1000 | 32.9 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w6_cobs | 16 | 5.9 | 9.5 | **9.2** | 10.7 | 13.7 | 19.7 | 1.6× |
+| w6_cobs | 64 | 7.7 | 23.3 | 23.0 | 22.5 | **21.5** | 27.5 | 2.8× |
+| w6_cobs | 256 | 13.2 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w6_cobs | 1024 | 37.2 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+| w7_store | 10 | 6.4 | 11.1 | 10.9 | **10.4** | 13.4 | 11.4 | 1.6× |
+| w7_store | 50 | 7.4 | 25.3 | 24.9 | **16.4** | 23.4 | 21.4 | 2.2× |
+| w7_store | 100 | 8.4 | 45.2 | 28.9 | **28.4** | 43.4 | 41.6 | 3.4× |
+| w7_store | 500 | 17.6 | ✗ | ✗ | ✗ | ✗ | ✗ | — |
+
+- The default 2^10 is the best nursery for one case only (W2 N = 68);
+  a smaller one (2^6 to 2^9) saves 20 to 60 % on the others. No size is best everywhere: with
+  generations that double, the arena a run needs is a step function of
+  the nursery size, and where the steps fall depends on the live data.
+  The timing rows use 2^10.
+- With its best nursery, C needs 1.5 to 3.4 times E's RAM once N is not
+  trivial. It is level with E (1.0 to 1.1×) only on the smallest cases,
+  where the Encore VM's fixed stack (about 4.9 KiB: driver and VM frames)
+  dominates.
+- The nursery does not change which cases fail.
+
+## Why the failing cases fail
+
+With a 512 KiB RAM budget on the AN505 (`--ram-kb 512 --heap-bytes 65536
+--c-log-nursery 8`), the cases that fail at 50 KiB pass, except two, and
+show what they need:
+
+| Case | C stack | arena peak | E, RAM in all |
+|---|---|---|---|
+| W0 N = 1000 | 62.8 KiB | 35.3 KiB | 36.4 KiB |
+| W1 N = 261 | 18.7 KiB | 35.3 KiB | 15.4 KiB |
+| W2 N = 260 | 22.6 KiB | 35.3 KiB | 21.6 KiB |
+| W4 N = 1000 | 86.6 KiB | 35.3 KiB | 32.9 KiB |
+| W5 N = 1000 | 102.6 KiB | 35.3 KiB | 32.9 KiB |
+| W6 N = 256 | 42.3 KiB | 35.3 KiB | 13.2 KiB |
+| W6 N = 1024, W7 N = 500 | — | more than 64 KiB | 37.2, 17.6 KiB |
+
+What comes from CertiRocq (v0.9.1, with a `nat` mapping):
+
+- **Direct style.** Every non-tail call is a C call with its
+  `stack_frame`, its GC roots and its saved registers: about 64 to 100
+  bytes per level of recursion. For W0, W4 and W5 at N = 1000 the stack
+  alone exceeds the 50 KiB budget. E keeps its continuations on the heap
+  (CPS), so its stack does not depend on N. CertiRocq's `-cps` mode would
+  do the same, but in this release it needs the old `gc.c` runtime and
+  calls registered primitives in direct style, so it cannot take a `nat`
+  mapping (see above).
+- **Generations that double and are never freed** (`gc_stack.c`): the
+  arena jumps to the next step as soon as the live data outgrows one. W1
+  N = 261 and W2 N = 260 fail on stack plus that step.
+
+What comes from this repository, and how much it weighs:
+
+- **The Gallina is not tail-recursive** (`sum`, `range_from`, `process`,
+  `read_bytes`). It is the program E runs too: rewriting it with
+  accumulators would help C, but would compare a different program.
+- **`bench_nat_case` takes the branches as closures**: one more C frame
+  (about 24 bytes) per level of a recursion on a `nat`, and two closures
+  and an environment allocated per level. Without it W0 N = 1000 would
+  still need about 40 KiB of stack plus its arena. A unary `nat` would be
+  far worse.
+- **The nursery size**: it does not decide which cases fit, but the
+  default 2^10 overstates C's RAM (table above).
+- **`thread_info`** takes about 4 KiB of the arena (the runtime's `args`
+  array), which the vendored runtime could shrink.
+

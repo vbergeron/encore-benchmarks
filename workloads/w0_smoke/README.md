@@ -17,15 +17,15 @@ check) and is the template for W1–W8.
   `--cps-optimize off`.
 
 - **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
-  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
-  once per element in `range_from` and `sum`. Smallest arena per case
-  (`cargo xtask minheap -v c`, results/minheap.jsonl, lm3s6965), and RAM
-  in all (statics + peak stack): N = 1: 8.5 KiB, 8.92 KiB in all; N = 10:
-  8.5 KiB, 9.48 KiB in all; N = 100: 16.5 KiB, 23.11 KiB in all. N = 1000
-  fails at every arena size: the C stack runs out, and a larger arena only
-  leaves it less of the RAM budget. E for comparison: N = 1: 0.25 KiB,
-  5.11 KiB in all; N = 10: 0.5 KiB, 5.38 KiB in all; N = 100: 3.25 KiB,
-  8.12 KiB in all; N = 1000: 31.5 KiB, 36.38 KiB in all.
+  heap, 2^10-word nursery by default, and C runs every N. The direct-style
+  C recurses once per element in `range_from` and `sum`. RAM in all
+  (statics + peak stack) at the smallest arena that passes, with the best
+  nursery of 2^6 to 2^10 words (`cargo xtask minheap -v c --c-log-nursery
+  k`, results/minheap.jsonl, lm3s6965): N = 1: 5.2 KiB (2^6, 8.9 with the
+  default 2^10; E 5.1); N = 10: 6.0 KiB (2^7, 9.5 with the default 2^10; E
+  5.4); N = 100: 14.1 KiB (2^8, 23.1 with the default 2^10; E 8.1). N =
+  1000 fails at every arena and nursery size: the C stack runs out, and a
+  larger arena only leaves it less of the RAM budget.
 
 The R variant is `(1..=n).sum()`, which LLVM folds into a closed form: the
 instruction count does not depend on N. That is a fair result for
