@@ -60,7 +60,10 @@ int bench_rt_last_error(void) { return last_error; }
 unsigned bench_rt_arena_peak(void) { return arena_peak * sizeof(value); }
 
 int bench_rt_run(value (*body)(struct thread_info *), value arg, value *out) {
+  /* Each run starts on a fresh arena, so its high-water mark is the
+     run's own, not a maximum since boot. */
   arena_used = 0;
+  arena_peak = 0;
   last_error = BENCH_RT_OK;
   if (__builtin_setjmp(unwind)) return 0;
   struct thread_info *ti = make_tinfo();
