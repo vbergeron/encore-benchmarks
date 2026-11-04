@@ -53,11 +53,19 @@ real use and a scale-up to 500 entries.
   bytes, so 500 credentials are 11.7 KiB live; `cargo xtask minheap` finds
   12.75 KiB for the whole case list. The heap peak reaches the whole heap
   from N = 50 up only because the collector runs when it is full.
-  C: 20 KiB arena, 2^10-word nursery.
-- **C** (CertiRocq, `certirocq/`): a store of 100 or 500 credentials
-  exhausts the 20 KiB arena (the runtime aborts). C therefore runs only
-  N = 10 and 50 (`CASES` in `certirocq/src/main.rs`), and has no rows for
-  N = 100 and 500.
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. A store of 100 credentials
+  needs the GC's third generation (16 KiB), which a 32 KiB arena misses by
+  a few hundred bytes. Smallest arena per case (`cargo xtask minheap -v
+  c`, results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak
+  stack): N = 10: 8.5 KiB, 11.38 KiB in all; N = 50: 16.5 KiB, 21.39 KiB
+  in all; N = 100: 32.5 KiB, 41.57 KiB in all. N = 500 fails at every
+  arena size: the C stack runs out, and a larger arena only leaves it less
+  of the RAM budget. With the aligned arena, N = 100 (arena exhausted)
+  fails; the rows labelled `c-arena-36k` (36 KiB arena) pass every N that
+  fits at some size. E for comparison: N = 10: 1.5 KiB, 6.38 KiB in all; N
+  = 50: 2.5 KiB, 7.38 KiB in all; N = 100: 3.5 KiB, 8.38 KiB in all; N =
+  500: 12.75 KiB, 17.62 KiB in all.
 
 Not modelled: deletion (a red-black delete is the other half of a real
 store, and a much longer proof), the credential itself (key pair, user and

@@ -67,13 +67,17 @@ command.
   event keeps a continuation until the answers are consed on the way back,
   so the live heap grows with N; `cargo xtask minheap` finds 28 KiB for the
   whole case list (N = 1000).
-  C: 20 KiB arena, 2^10-word nursery.
-- **C** (CertiRocq, `certirocq/`): the direct-style C recurses once per
-  event (`process` is not tail-recursive), and 1000 events exhaust the C
-  stack (the runtime's stack guard aborts the run). C therefore runs only
-  N = 10 and 100 (`CASES` in `certirocq/src/main.rs`), and has no row for
-  N = 1000. `modulus` (65521) needs `Nat.tail_add` and `tail_mul` in
-  `certirocq/theories/BenchNat.v`: see there.
+- **C** (CertiRocq, `certirocq/`): the arena gets the same 32 KiB as the E
+  heap, 2^10-word nursery, and C runs every N. The direct-style C recurses
+  once per event (`process` is not tail-recursive). `modulus` (65521)
+  needs `Nat.tail_add` and `tail_mul` in `certirocq/theories/BenchNat.v`:
+  see there. Smallest arena per case (`cargo xtask minheap -v c`,
+  results/minheap.jsonl, lm3s6965), and RAM in all (statics + peak stack):
+  N = 10: 16.5 KiB, 19.02 KiB in all; N = 100: 16.5 KiB, 28.05 KiB in all.
+  N = 1000 fails at every arena size: the C stack runs out, and a larger
+  arena only leaves it less of the RAM budget. E for comparison: N = 10: 1
+  KiB, 5.88 KiB in all; N = 100: 2.5 KiB, 7.38 KiB in all; N = 1000: 28
+  KiB, 32.88 KiB in all.
 
 Not modelled: the flash itself (a slot is its trailer, the number of
 chunks and a running digest, not its bytes), a real digest or signature

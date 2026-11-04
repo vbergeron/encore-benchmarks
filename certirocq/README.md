@@ -68,9 +68,13 @@ settable) and `bench_rt.c`:
 
 - The GC mallocs a nursery and then generations of twice the previous
   size, and never frees them. `malloc` here is a bump allocator over a
-  fixed **arena** (`--heap-bytes`, default 20 KiB), which also holds the
-  4 KiB `thread_info`. The nursery is 2^`--c-log-nursery` words (default
-  10, 4 KiB).
+  fixed **arena** (`--heap-bytes`), which also holds the 4 KiB
+  `thread_info`. By default the arena gets the same bytes as the
+  workload's Encore heap (32 KiB, 40 KiB for W6), and the C stack what is
+  left of the RAM budget. The nursery is 2^`--c-log-nursery` words
+  (default 10, 4 KiB). With a 4 KiB nursery the arena a run needs is a
+  step function: about 8.5 KiB (`thread_info` and nursery), 16.5 KiB (a
+  first 8 KiB generation), 32.5 KiB (a second one of 16 KiB).
 - Each run starts on a fresh arena: CertiRocq's model is one heap per
   program execution. It costs about 2.2k instructions per run (heap setup,
   and `body` re-evaluating the top-level definitions, including the
@@ -89,9 +93,17 @@ settable) and `bench_rt.c`:
   nat mapping.
 - `exit()` from the runtime (arena exhausted) unwinds to the driver with
   `__builtin_longjmp`; the case is recorded as failed.
-- With the 20 KiB arena the largest cases do not fit, in the arena or in
-  the C stack, and each driver runs only the cases that do (its `CASES`):
-  W0 up to N = 100, W1 up to 32-byte APDUs, W2 up to 68 bytes of calldata,
-  W3 up to 16 rules, W4 up to 100 APDUs, W5 up to 100 events, W6 up to 64
-  bytes, W7 up to 50 credentials. The workload READMEs say which limit the
-  larger cases hit.
+- Each driver runs every case of `vectors::CASES`, as E and R do; a case
+  that does not fit is recorded as failed with its reason. Since the
+  arena and the C stack share the RAM budget, a case can need an arena
+  larger than E's heap (W1 N = 128, W3 N = 64, W7 N = 100 need 32.5 KiB)
+  or a smaller one, to leave stack (W6 N = 64 passes up to 38 KiB, not
+  with 40 KiB). `cargo xtask minheap -v c` finds, per case, the smallest
+  arena that passes, the largest one tried that still passes, and the RAM
+  in all (statics + peak stack); the results are in
+  `results/minheap.jsonl`. A 36 KiB arena passes every case that fits at
+  some size: the rows labelled `c-arena-36k` were run with it, so the
+  instruction counts cover them. The cases that fit at no size, all
+  because the C stack runs out: W0 N = 1000, W1 N = 261, W2 N = 260,
+  W4 N = 1000, W5 N = 1000, W6 N = 256 and 1024, W7 N = 500. The workload
+  READMEs give the figures.

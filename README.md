@@ -25,13 +25,13 @@ time.
 |---|---|
 | Device harness (`crates/bench_harness`) | done: regions, DWT cycles, stack painting, JSONL records |
 | Build helper (`crates/bench_build`) | done: board budgets → `memory.x`, Encore bytecode |
-| Runner (`xtask`, run as `cargo xtask`) | done: QEMU instruction counts per region, sizes, oracle check, min-heap search |
+| Runner (`xtask`, run as `cargo xtask`) | done: QEMU instruction counts per region, sizes, oracle check, per-case min-heap search (E and C) |
 | Rocq with dune (`theories/`, `workloads/*/theories`) | done: shared extraction setup, extraction promoted to `.scm` |
 | QEMU boards (M3 and M33) | done |
 | W0 smoke workload, variants E, R and C | done, runs on both QEMU boards |
 | Real boards (STM32U5, nRF52840) | board files and DWT path written, **not validated on hardware** |
 | GC pause and GC count metrics | done: every E workload records them in the memory profile (`gc` field), in instructions on QEMU; cycles on DWT boards not validated on hardware |
-| Variant C (CertiRocq), W0 to W7 | done, run on both QEMU boards (the cases that fit the RAM budget); see `certirocq/` |
+| Variant C (CertiRocq), W0 to W7 | done, run on both QEMU boards on every N (arena = E heap; cases that do not fit are failed rows); see `certirocq/` |
 | W1 (APDU + BER-TLV), W2 (RLP transaction decoder), variants E, R and C | done, run on both QEMU boards |
 | W4 (PIN state machine), W6 (COBS), variants E, R and C | done, run on both QEMU boards |
 | W3 (BIP32 path policy and allow-list), variants E, R and C | done, runs on both QEMU boards |
@@ -80,8 +80,10 @@ cargo xtask run -w w0_smoke -v e --profile memory       # heap peak, VM ops
 # Every variant must reproduce the R oracle's outputs
 cargo xtask check
 
-# Smallest Encore heap at which every case still passes
+# Per case: smallest Encore heap (e) or CertiRocq arena (c) that passes,
+# and the RAM needed in all (statics + stack), in results/minheap.jsonl
 cargo xtask minheap -w w0_smoke -v e
+cargo xtask minheap -w w0_smoke -v c
 ```
 
 `--dry-run` prints the records without appending to `results/`.
