@@ -45,52 +45,53 @@ RAM a case needs in all (statics with the smallest heap or arena that
 passes, plus the peak stack), in KiB, on a 50 KiB budget (lm3s6965; the
 AN505 gives the same figures). C at its best nursery of 2^6 to 2^10 words
 (full table and analysis in [certirocq/README.md](certirocq/README.md)).
-The last two columns are E's instruction count over C's (timing rows),
-with C at its default 2^10 nursery and at the nursery that minimises its
-RAM: a smaller nursery collects more often, so C's RAM and its speed pull
-in opposite directions. Instructions, not cycles.
+The last two columns are E's instruction count over C's (timing rows, E
+with the CPS optimizer on), with C at its default 2^10 nursery and at the
+nursery that minimises its RAM: a smaller nursery collects more often, so
+C's RAM and its speed pull in opposite directions. Instructions, not
+cycles.
 
 | Workload | N | E RAM | C RAM (best nursery) | C / E RAM | E / C instr., C at 2^10 | E / C instr., C at its best-RAM nursery |
 |---|---|---|---|---|---|---|
-| w0_smoke | 1 | 5.1 | 5.2 (2^6) | 1.0× | 14× | 14× |
-| w0_smoke | 10 | 5.4 | 6.0 (2^7) | 1.1× | 21× | 21× |
-| w0_smoke | 100 | 8.1 | 14.1 (2^8) | 1.7× | 18× | 14× |
+| w0_smoke | 1 | 5.1 | 5.2 (2^6) | 1.0× | 7.2× | 7.0× |
+| w0_smoke | 10 | 5.4 | 6.0 (2^7) | 1.1× | 7.4× | 7.4× |
+| w0_smoke | 100 | 8.1 | 14.1 (2^8) | 1.7× | 4.7× | 3.6× |
 | w0_smoke | 1000 | 36.4 | does not fit | — | — | — |
-| w1_apdu | 5 | 5.6 | 5.8 (2^7) | 1.0× | 5× | 5× |
-| w1_apdu | 32 | 6.6 | 10.2 (2^8) | 1.5× | 20× | 14× |
-| w1_apdu | 128 | 10.4 | 27.9 (2^9) | 2.7× | 15× | 14× |
+| w1_apdu | 5 | 5.6 | 5.8 (2^7) | 1.0× | 2.3× | 2.3× |
+| w1_apdu | 32 | 6.6 | 10.2 (2^8) | 1.5× | 6.6× | 4.7× |
+| w1_apdu | 128 | 10.4 | 27.9 (2^9) | 2.7× | 4.8× | 4.3× |
 | w1_apdu | 261 | 15.4 | does not fit | — | — | — |
-| w2_rlp | 0 | 7.6 | 15.1 (2^8) | 2.0× | 19× | 13× |
-| w2_rlp | 4 | 7.4 | 14.7 (2^8) | 2.0× | 17× | 12× |
-| w2_rlp | 68 | 10.6 | 24.4 (2^10) | 2.3× | 18× | 18× |
+| w2_rlp | 0 | 7.6 | 15.1 (2^8) | 2.0× | 6.6× | 4.4× |
+| w2_rlp | 4 | 7.4 | 14.7 (2^8) | 2.0× | 6.4× | 4.5× |
+| w2_rlp | 68 | 10.6 | 24.4 (2^10) | 2.3× | 6.0× | 6.0× |
 | w2_rlp | 260 | 21.6 | does not fit | — | — | — |
-| w3_policy | 1 | 5.9 | 9.0 (2^6) | 1.5× | 10× | 6× |
-| w3_policy | 4 | 5.9 | 11.0 (2^7) | 1.9× | 10× | 7× |
-| w3_policy | 16 | 5.9 | 12.3 (2^6) | 2.1× | 10× | 5× |
-| w3_policy | 64 | 5.9 | 17.0 (2^6) | 2.9× | 10× | 5× |
-| w4_pin | 1 | 5.6 | 6.0 (2^6) | 1.1× | 10× | 6× |
-| w4_pin | 10 | 5.9 | 7.8 (2^6) | 1.3× | 27× | 12× |
-| w4_pin | 100 | 7.4 | 20.7 (2^8) | 2.8× | 24× | 15× |
+| w3_policy | 1 | 5.9 | 9.0 (2^6) | 1.5× | 9.9× | 5.5× |
+| w3_policy | 4 | 5.9 | 11.0 (2^7) | 1.9× | 10.0× | 7.2× |
+| w3_policy | 16 | 5.9 | 12.3 (2^6) | 2.1× | 10.0× | 5.3× |
+| w3_policy | 64 | 5.9 | 17.0 (2^6) | 2.9× | 10.0× | 5.2× |
+| w4_pin | 1 | 5.6 | 6.0 (2^6) | 1.1× | 4.4× | 2.5× |
+| w4_pin | 10 | 5.9 | 7.8 (2^6) | 1.3× | 9.5× | 4.1× |
+| w4_pin | 100 | 7.4 | 20.7 (2^8) | 2.8× | 8.4× | 5.4× |
 | w4_pin | 1000 | 32.9 | does not fit | — | — | — |
-| w5_update | 10 | 5.9 | 8.8 (2^6) | 1.5× | 10× | 5× |
-| w5_update | 100 | 7.4 | 19.9 (2^6) | 2.7× | 10× | 3× |
+| w5_update | 10 | 5.9 | 8.8 (2^6) | 1.5× | 9.7× | 5.3× |
+| w5_update | 100 | 7.4 | 19.9 (2^6) | 2.7× | 10.0× | 2.9× |
 | w5_update | 1000 | 32.9 | does not fit | — | — | — |
-| w6_cobs | 16 | 5.9 | 9.2 (2^7) | 1.6× | 17× | 12× |
-| w6_cobs | 64 | 7.7 | 21.5 (2^9) | 2.8× | 19× | 17× |
+| w6_cobs | 16 | 5.9 | 9.2 (2^7) | 1.6× | 5.4× | 3.8× |
+| w6_cobs | 64 | 7.7 | 21.5 (2^9) | 2.8× | 4.8× | 4.5× |
 | w6_cobs | 256 | 13.2 | does not fit | — | — | — |
 | w6_cobs | 1024 | 37.2 | does not fit | — | — | — |
-| w7_store | 10 | 6.4 | 10.4 (2^8) | 1.6× | 9× | 7× |
-| w7_store | 50 | 7.4 | 16.4 (2^8) | 2.2× | 8× | 6× |
-| w7_store | 100 | 8.4 | 28.4 (2^8) | 3.4× | 7× | 4× |
+| w7_store | 10 | 6.4 | 10.4 (2^8) | 1.6× | 9.1× | 7.4× |
+| w7_store | 50 | 7.4 | 16.4 (2^8) | 2.2× | 8.1× | 5.6× |
+| w7_store | 100 | 8.4 | 28.4 (2^8) | 3.4× | 6.7× | 4.3× |
 | w7_store | 500 | 17.6 | does not fit | — | — | — |
 
-In short: on this budget E runs every case, C fails on 8 of 31 for want
-of C stack (direct-style code recurses on it); where both run, C needs 1.5
-to 3.4 times E's RAM beyond the smallest cases, and E executes
-5 to 27 times more instructions than C at 2^10, 3 to 21 times more
-than C at its smallest RAM. E's flash is 32 to 49 KiB against 10 to 31
-KiB for C (the VM and the bytecode). Speed conclusions wait for the
-boards.
+In short: on this budget E runs every case, C fails on 8 of 31 for want of
+C stack (direct-style code recurses on it); where both run, C needs 1.5 to
+3.4 times E's RAM beyond the smallest cases, and E executes 2.3 to 10
+times more instructions than C at 2^10, 2.3 to 7.4 times more than C at
+its smallest RAM (E with the CPS optimizer, the study's default). E's
+flash is 31 to 48 KiB against 10 to 31 KiB for C (the VM and the
+bytecode). Speed conclusions wait for the boards.
 
 ## Layout
 
