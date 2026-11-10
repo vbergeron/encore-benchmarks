@@ -52,6 +52,7 @@ certirocq/           C variant: CertiRocq nat mapping, runtime, generation scrip
 xtask/               host runner (`cargo xtask`): build, run, record, check
 docker/              Rocq (and CertiRocq) image, `docker/rocq.sh` to use it
 results/             benchmarks.jsonl (one row per case), see results/README.md
+enamel/              Rocq model of Enamel's envelope (proofs only), see enamel/README.md
 ```
 
 ## Quick start

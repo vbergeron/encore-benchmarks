@@ -1,0 +1,7 @@
+; Formal model of Enamel's envelope (https://github.com/ahoy-jon/enamel,
+; docs/adjunctions.md). Proof checking only: nothing is extracted.
+; See ../README.md and ../LIMITS.md.
+(rocq.theory
+ (name Enamel)
+ (modules TripleAdjonction Limits)
+ (theories Stdlib))
