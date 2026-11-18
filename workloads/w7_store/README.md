@@ -42,8 +42,13 @@ real use and a scale-up to 500 entries.
 - **Input**: the assertions and the registrations (2 KiB for 500) are in
   flash and read byte by byte through the `input_byte` extern
   (`vendor/encore-extraction/ExtrEncoreInput.v`). R reads the same bytes
-  from a slice, and keeps the store as a sorted array (binary search, a
-  shift to insert): no allocator, and the store is rebuilt at each run.
+  from a slice, and keeps the store as a red-black tree in static arrays
+  (nodes are indices, rebalanced in place): the same O(log n) structure
+  as the Gallina store, no allocator, and the store is rebuilt at each
+  run. Until 2026-11, R used a sorted array with binary search, whose
+  insertions shift the array, O(n) each: its instructions per credential
+  grew with N, which made Encore's slowdown against R shrink as N grew.
+  Rows labelled `w7-rust-rbtree` are the red-black tree.
 - **Trust**: `nat` as VM integers (`ExtrEncore.v`); handles and counters
   are 16-bit and a counter goes up at most 32 times, far below 2^23.
   `input_byte` realised by the host (`ExtrEncoreInput.v`); the layout
